@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<cinder>
+    <block
+      author="@jeremyfromearth"
+      id="com.jeremyfromearth.sprite"
+      git = ""
+      license="GPL"
+      name="Sprite"
+      summary="A texture source display component supports animating position, opacity, scale and masking"
+      url=""
+	    git="">
+      <headerPattern>src/*.h</headerPattern>
+      <sourcePattern>src/*.cpp</sourcePattern>
+      <copyExclude>samples</copyExclude>
+    </block>
+</cinder>
