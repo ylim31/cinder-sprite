@@ -77,11 +77,15 @@ EaseFn sprite::look_up_easing_function(std::string key) {
   // ctr(s) / dctr(s)
   //////////////////////////////////////////////////////
 sprite::sprite(const texture_provider_ref texture_provider) {
+  provider = texture_provider;
+  sprite();
+}
+
+sprite::sprite() {
   zoom = 0.0f;
   alpha = 1.0f;
   scale = 1.0f;
   scale_offset = 1.0f;
-  provider = texture_provider;
 }
 
   //////////////////////////////////////////////////////
@@ -90,6 +94,10 @@ sprite::sprite(const texture_provider_ref texture_provider) {
 void sprite::set_zoom_center(vec2 new_zoom_center) {
   zoom_center = new_zoom_center;
   update_zoom();
+}
+
+void sprite::set_provider(texture_provider_ref provider_ref) {
+  provider = provider_ref;
 }
 
   //////////////////////////////////////////////////////
