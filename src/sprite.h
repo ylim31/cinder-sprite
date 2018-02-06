@@ -23,7 +23,9 @@ public:
   //////////////////////////////////////////////////////
   typedef std::shared_ptr<sprite> sprite_ref;
   
-  static sprite_ref create(texture_provider_ref tex);
+  static sprite_ref create(texture_provider_ref provider_ref);
+  
+  static sprite_ref create();
   
   static std::map<std::string, ci::EaseFn> easing;
   
@@ -51,13 +53,17 @@ public:
   //////////////////////////////////////////////////////
   // setters
   //////////////////////////////////////////////////////
+  void set_alpha(float new_alpha);
+  
   void set_coordinates(ci::vec2 new_coords);
+  
+  void set_provider(texture_provider_ref provider_ref);
   
   void set_scale(float new_scale);
   
-  void set_zoom_center(ci::vec2 new_focal_point);
+  void set_zoom(float new_zoom);
   
-  void set_provider(texture_provider_ref provider_ref);
+  void set_zoom_center(ci::vec2 new_focal_point);
   
   //////////////////////////////////////////////////////
   // methods

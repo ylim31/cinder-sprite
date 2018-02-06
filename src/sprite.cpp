@@ -1,4 +1,7 @@
-  // cinder
+// std
+#include <algorithm>
+
+// cinder
 #include "cinder/app/App.h"
 #include "cinder/Log.h"
 #include "cinder/gl/gl.h"
@@ -20,6 +23,10 @@ ci::signals::Signal<void()> sprite::complete;
 
 sprite_ref sprite::create(texture_provider_ref provider){
   return std::make_shared<sprite>(provider);
+}
+
+sprite_ref sprite::create() {
+  return std::make_shared<sprite>();
 }
 
 std::map<std::string, EaseFn> sprite::easing = { 
@@ -88,21 +95,53 @@ sprite::sprite() {
   scale_offset = 1.0f;
 }
 
-  //////////////////////////////////////////////////////
-  // setters
-  //////////////////////////////////////////////////////
-void sprite::set_zoom_center(vec2 new_zoom_center) {
-  zoom_center = new_zoom_center;
-  update_zoom();
+//////////////////////////////////////////////////////
+// setters
+//////////////////////////////////////////////////////
+void sprite::set_alpha(float new_alpha) {
+  alpha = std::max(0.0f, std::min(new_alpha, 1.0f));
 }
+
+/**
+ * Sets the sprites coordinates.
+ * This moves the sprite right away and does not apply animation
+ * Further, it sets the absolute coordinates from which
+ * subsequent calls to moveTo will be relative to.
+ */
+void sprite::set_coordinates(vec2 new_coordinates) {
+  coordinates = new_coordinates;
+}
+
 
 void sprite::set_provider(texture_provider_ref provider_ref) {
   provider = provider_ref;
 }
 
-  //////////////////////////////////////////////////////
-  // getters
-  //////////////////////////////////////////////////////
+/**
+ * Sets the sprites scale
+ * This scales the sprite right away and does not apply animation
+ * Further, it sets the absolute scale from which
+ * subsequent calls to scaleTo will be relative to.
+ */
+void sprite::set_scale(float new_scale) {
+  scale_offset() = std::max(0.0f, new_scale);
+}
+
+void sprite::set_zoom_center(vec2 new_zoom_center) {
+  zoom_center = new_zoom_center;
+  update_zoom();
+}
+
+void sprite::set_zoom(float new_zoom) {
+  zoom_to(nullptr, new_zoom, 0);
+}
+
+
+
+
+//////////////////////////////////////////////////////
+// getters
+//////////////////////////////////////////////////////
 texture_provider_ref sprite::get_provider() {
   return provider;
 }
@@ -281,26 +320,6 @@ void sprite::scale_to(TimelineRef animator, float target, float duration, float 
 }
 
 /**
- * Sets the sprites coordinates.
- * This moves the sprite right away and does not apply animation
- * Further, it sets the absolute coordinates from which
- * subsequent calls to moveTo will be relative to.
- */
-void sprite::set_coordinates(vec2 new_coordinates) {
-  coordinates = new_coordinates;
-}
-
-/**
- * Sets the sprites scale
- * This scales the sprite right away and does not apply animation
- * Further, it sets the absolute scale from which
- * subsequent calls to scaleTo will be relative to.
- */
-void sprite::set_scale(float new_scale) {
-  scale = new_scale;
-}
-
-/**
  * Starts media playback from provider
  */
 void sprite::start_media(TimelineRef animator, bool loop, bool cue_complete, bool cue_complete_transition) {
@@ -354,12 +373,12 @@ void sprite::update_fbo() {
       fbo = gl::Fbo::create(texture_size.x, texture_size.y, true);
     }
     
-    gl::ScopedFramebuffer scopedFbo(fbo);
-    gl::ScopedViewport scpVp(ivec2(0), fbo->getSize());
+    gl::ScopedMatrices scoped_matrices;
+    gl::ScopedFramebuffer scoped_fbo(fbo);
+    gl::ScopedViewport scoped_viewport(ivec2(0), fbo->getSize());
     gl::setMatricesWindow(fbo->getSize());
     gl::clear(ColorA(0, 0, 0, 0));
     gl::draw(texture, zoom_area, fbo->getBounds());
-    
     crop = fbo->getColorTexture();
   }
 }
