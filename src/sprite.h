@@ -61,6 +61,8 @@ public:
   
   void set_scale(float new_scale);
   
+  void set_tint(ci::Color new_tint);
+  
   void set_zoom(float new_zoom);
   
   void set_zoom_center(ci::vec2 new_focal_point);
@@ -109,7 +111,7 @@ public:
               bool signal_complete = false);
   
   // schedule an animation to scale the sprite
-  void scale_to(
+  ci::TweenRef<float> scale_to(
                ci::TimelineRef animator,
                float target,
                float duration = 0,
@@ -119,6 +121,15 @@ public:
   
   // schedule an animation to start media
   void start_media(ci::TimelineRef animator, bool loop, bool cue_complete, bool cue_complete_transition);
+  
+  // schedule an animation to tint the sprite
+  void tint_to(
+               ci::TimelineRef animator,
+               ci::Color target,
+               float duration = 0,
+               float delay = 0,
+               ci::EaseFn fn = ci::easeInOutQuad,
+               bool signal_complete = false);
   
   // update the sprite (called every frame)
   void update();
@@ -145,6 +156,7 @@ private:
   ci::gl::TextureRef texture; // the original texture
   
   // animatables
+  ci::Anim<ci::Color> tint;       // the tint to be applied to this sprite
   ci::Anim<float> zoom;           // the level of zooming 0 = none, 1.0 completely zoomed in
   ci::Anim<float> scale_offset;   // offset from absolute scale
   ci::Anim<ci::vec2> offset;      // offset from absolute coords

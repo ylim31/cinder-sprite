@@ -85,14 +85,19 @@ EaseFn sprite::look_up_easing_function(std::string key) {
   //////////////////////////////////////////////////////
 sprite::sprite(const texture_provider_ref texture_provider) {
   provider = texture_provider;
-  sprite();
+  zoom() = 0.0f;
+  alpha() = 1.0f;
+  scale = 1.0f;
+  scale_offset() = 1.0f;
+  tint() = Color::white();
 }
 
 sprite::sprite() {
-  zoom = 0.0f;
-  alpha = 1.0f;
+  zoom() = 0.0f;
+  alpha() = 1.0f;
   scale = 1.0f;
-  scale_offset = 1.0f;
+  scale_offset() = 1.0f;
+  tint() = Color::white();
 }
 
 //////////////////////////////////////////////////////
@@ -127,6 +132,10 @@ void sprite::set_scale(float new_scale) {
   scale_offset() = std::max(0.0f, new_scale);
 }
 
+void sprite::set_tint(Color new_color) {
+  tint() = new_color;
+}
+
 void sprite::set_zoom_center(vec2 new_zoom_center) {
   zoom_center = new_zoom_center;
   update_zoom();
@@ -135,9 +144,6 @@ void sprite::set_zoom_center(vec2 new_zoom_center) {
 void sprite::set_zoom(float new_zoom) {
   zoom_to(nullptr, new_zoom, 0);
 }
-
-
-
 
 //////////////////////////////////////////////////////
 // getters
@@ -188,14 +194,14 @@ void sprite::apply_mask_animation(
  * Call once per frame, per window
  */
 void sprite::draw() {
-  if (alpha > 0.0 && crop) {
+  if (alpha() > 0.0 && crop) {
     gl::ScopedColor sc;
     gl::ScopedBlendAlpha sa;
     gl::ScopedModelMatrix m1;
     gl::translate(coordinates + offset());
     gl::scale(scale * scale_offset(), scale * scale_offset());
     gl::translate(-texture_size * 0.5f);
-    gl::color(ColorA(1.0f, 1.0f, 1.0f, alpha));
+    gl::color(ColorA(tint, alpha));
     gl::draw(crop, Area(mask_rect), mask_rect);
   }
 }
@@ -302,7 +308,7 @@ void sprite::move_to(TimelineRef animator, vec2 target, float duration, float de
 /**
  * Invokes animation on scale
  */
-void sprite::scale_to(TimelineRef animator, float target, float duration, float delay, ci::EaseFn ease_in, bool signal_complete) {
+ci::TweenRef<float> sprite::scale_to(TimelineRef animator, float target, float duration, float delay, ci::EaseFn ease_in, bool signal_complete) {
   if (duration <= 0) {
     scale_offset = target;
     if (signal_complete) {
@@ -310,7 +316,7 @@ void sprite::scale_to(TimelineRef animator, float target, float duration, float 
     }
   }
   else {
-    animator->appendTo(&scale_offset, target, duration).delay(delay).easeFn(ease_in)
+    return animator->appendTo(&scale_offset, target, duration).delay(delay).easeFn(ease_in)
     .finishFn([&, signal_complete]{
       if (signal_complete) {
         sprite::complete.emit();
@@ -334,6 +340,22 @@ void sprite::start_media(TimelineRef animator, bool loop, bool cue_complete, boo
   if (cue_complete_transition) {
     provider->get_media_complete_signal().connect([&, animator] {
       alpha_to(animator, 0.0f, 2.0f);
+    });
+  }
+}
+
+void sprite::tint_to(TimelineRef animator, Color target, float duration, float delay, EaseFn ease_fn, bool signal_complete) {
+  if (duration <= 0) {
+    tint = target;
+    if (signal_complete) {
+      sprite::complete.emit();
+    }
+  }
+  else {
+    animator->appendTo(&tint, target, duration).delay(delay).easeFn(ease_fn).finishFn([&, signal_complete] {
+      if (signal_complete) {
+        sprite::complete.emit();
+      }
     });
   }
 }
@@ -367,7 +389,6 @@ void sprite::update() {
 }
 
 void sprite::update_fbo() {
-    // draw the main image zoomed
   if (texture) {
     if (!fbo) {
       fbo = gl::Fbo::create(texture_size.x, texture_size.y, true);
