@@ -16,9 +16,9 @@
 using namespace ci;
 using namespace ci::app;
 
-  ////////////////////////////////////////////////////
-  //  static
-  ////////////////////////////////////////////////////
+////////////////////////////////////////////////////
+//  static
+////////////////////////////////////////////////////
 ci::signals::Signal<void()> sprite::complete;
 
 sprite_ref sprite::create(texture_provider_ref provider){
@@ -29,60 +29,9 @@ sprite_ref sprite::create() {
   return std::make_shared<sprite>();
 }
 
-std::map<std::string, EaseFn> sprite::easing = { 
-  { "ease-in-quad", EaseInQuad() },
-  { "ease-out-quad", EaseOutQuad() },
-  { "ease-in-out-quad", EaseInOutQuad() },
-  { "ease-out-in-quad", EaseOutInQuad() },
-  { "ease-in-cubic", EaseInCubic() },
-  { "ease-out-cubic", EaseOutCubic() },
-  { "ease-in-out-cubic", EaseInOutCubic() },
-  { "ease-out-in-cubic", EaseOutInCubic() },
-  { "ease-in-quart", EaseInQuart() },
-  { "ease-out-quart", EaseOutQuart() },
-  { "ease-in-out-quart", EaseInOutQuart() },
-  { "ease-out-in-quart", EaseOutInQuart() },
-  { "ease-in-quint", EaseInQuint() },
-  { "ease-out-quint", EaseOutQuint() },
-  { "ease-in-out-quint", EaseOutQuint() },
-  { "ease-out-in-quint", EaseOutInQuint() },
-  { "ease-in-sine", EaseInSine() },
-  { "ease-out-sine", EaseOutSine() },
-  { "ease-in-out-sine", EaseInOutSine() },
-  { "ease-out-in-sine", EaseOutInSine() },
-  { "ease-in-expo", EaseInExpo() },
-  { "ease-out-expo", EaseOutExpo() },
-  { "ease-in-out-expo", EaseInOutExpo() },
-  { "ease-out-in-expo", EaseOutInExpo() },
-  { "ease-in-circ", EaseInCirc() },
-  { "ease-out-circ", EaseOutCirc() },
-  { "ease-in-out-circ", EaseInOutCirc() },
-  { "ease-out-in-circ", EaseOutInCirc() },
-  { "ease-in-atan", EaseInAtan() },
-  { "ease-out-atan", EaseOutAtan() },
-  { "ease-in-out-atan", EaseInOutAtan() },
-  { "ease-none", EaseNone() },
-  { "ease-in-back", EaseInBack() },
-  { "ease-out-back", EaseOutBack() },
-  { "ease-in-out-back", EaseInOutBack() },
-  { "ease-out-in-back", EaseOutInBack() },
-  { "ease-in-bounce", EaseInBounce() },
-  { "ease-out-bounce", EaseOutBounce() },
-  { "ease-in-out-bounce", EaseInOutBounce() },
-  { "ease-out-in-bounce", EaseOutInBounce() }
-};
-
-
-EaseFn sprite::look_up_easing_function(std::string key) {
-  if (easing.count(key) != 0) {
-    return easing.at(key);
-  }
-  return easeInOutQuad;
-}
-
-  //////////////////////////////////////////////////////
-  // ctr(s) / dctr(s)
-  //////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
+// ctr(s) / dctr(s)
+//////////////////////////////////////////////////////
 sprite::sprite(const texture_provider_ref texture_provider) {
   provider = texture_provider;
   zoom() = 0.0f;

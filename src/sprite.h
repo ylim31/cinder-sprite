@@ -23,13 +23,9 @@ public:
   //////////////////////////////////////////////////////
   typedef std::shared_ptr<sprite> sprite_ref;
   
-  static sprite_ref create(texture_provider_ref provider_ref);
-  
   static sprite_ref create();
   
-  static std::map<std::string, ci::EaseFn> easing;
-  
-  static ci::EaseFn look_up_easing_function(std::string key);
+  static sprite_ref create(texture_provider_ref provider_ref);
   
   static ci::signals::Signal<void()> complete;
   
