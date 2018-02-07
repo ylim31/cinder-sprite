@@ -6,12 +6,9 @@
 #include "cinder/Log.h"
 #include "cinder/gl/gl.h"
 
-  // sfmoma
+// sfmoma
 #include "sprite.h"
 #include "provider.h"
-
-  //#include "webview/JSDelegate.h"
-  //#include "webview/MethodDispatcher.h"
 
 using namespace ci;
 using namespace ci::app;
@@ -33,20 +30,20 @@ sprite_ref sprite::create() {
 // ctr(s) / dctr(s)
 //////////////////////////////////////////////////////
 sprite::sprite(const texture_provider_ref texture_provider) {
-  provider = texture_provider;
-  zoom() = 0.0f;
   alpha() = 1.0f;
   scale = 1.0f;
   scale_offset() = 1.0f;
   tint() = Color::white();
+  provider = texture_provider;
+  zoom() = 0.0f;
 }
 
 sprite::sprite() {
-  zoom() = 0.0f;
   alpha() = 1.0f;
   scale = 1.0f;
   scale_offset() = 1.0f;
   tint() = Color::white();
+  zoom() = 0.0f;
 }
 
 //////////////////////////////////////////////////////
@@ -56,27 +53,14 @@ void sprite::set_alpha(float new_alpha) {
   alpha = std::max(0.0f, std::min(new_alpha, 1.0f));
 }
 
-/**
- * Sets the sprites coordinates.
- * This moves the sprite right away and does not apply animation
- * Further, it sets the absolute coordinates from which
- * subsequent calls to moveTo will be relative to.
- */
 void sprite::set_coordinates(vec2 new_coordinates) {
   coordinates = new_coordinates;
 }
-
 
 void sprite::set_provider(texture_provider_ref provider_ref) {
   provider = provider_ref;
 }
 
-/**
- * Sets the sprites scale
- * This scales the sprite right away and does not apply animation
- * Further, it sets the absolute scale from which
- * subsequent calls to scaleTo will be relative to.
- */
 void sprite::set_scale(float new_scale) {
   scale_offset() = std::max(0.0f, new_scale);
 }
@@ -101,47 +85,21 @@ texture_provider_ref sprite::get_provider() {
   return provider;
 }
 
-  //////////////////////////////////////////////////////
-  // methods
-  //////////////////////////////////////////////////////
-/**
- * Starts media playback from provider
- */
-void sprite::alpha_to(TimelineRef animator, float target, float duration, float delay, EaseFn ease_fn, bool signal_complete) {
+//////////////////////////////////////////////////////
+// methods
+//////////////////////////////////////////////////////
+void sprite::alpha_to(TimelineRef animator, float target, float duration, float delay, EaseFn ease_fn) {
   if (duration <= 0) {
     alpha = 0;
-    if (signal_complete) {
-      sprite::complete.emit();
-    }
-  }
-  else {
-    animator->appendTo(&alpha, target, duration).delay(delay).easeFn(ease_fn).finishFn([&, signal_complete] {
-      if (signal_complete) {
-        sprite::complete.emit();
-      }
-    });
+  } else {
+    animator->appendTo(&alpha, target, duration).delay(delay).easeFn(ease_fn);
   }
 }
 
-/**
- * Convenience method for invoking an animation on the mask
- */
-void sprite::apply_mask_animation(
-                                TimelineRef animator,
-                                Rectf startMask, Rectf targetMask,
-                                float duration, float delay, EaseFn easeFn, bool signalComplete) {
-  
-  animator->appendTo(&mask_rect, startMask, targetMask, duration).delay(delay).easeFn(easeFn).finishFn([&, signalComplete]{
-    if (signalComplete) {
-      sprite::complete.emit();
-    }
-  });
+void sprite::apply_mask_animation(TimelineRef animator, Rectf startMask, Rectf targetMask, float duration, float delay, EaseFn easeFn) {
+  animator->appendTo(&mask_rect, startMask, targetMask, duration).delay(delay).easeFn(easeFn);
 }
 
-/**
- * Draws texture to window
- * Call once per frame, per window
- */
 void sprite::draw() {
   if (alpha() > 0.0 && crop) {
     gl::ScopedColor sc;
@@ -155,157 +113,88 @@ void sprite::draw() {
   }
 }
 
-/**
- * Hides this sprite with a mask
- */
-void sprite::mask_hide(
-                      TimelineRef animator, std::string animation,
-                      float duration, float delay, EaseFn ease_fn, bool signalComplete) {
-  
+void sprite::mask_hide(TimelineRef animator, std::string animation, float duration, float delay, EaseFn ease_fn) {
+
   if (animation == "none") {
-    animator->appendTo(&mask_rect, Rectf(0, 0, 0, 0), 0.0f).delay(delay).finishFn([&, signalComplete] {
-      if (signalComplete) {
-        sprite::complete.emit();
-      }
-    });
+    animator->appendTo(&mask_rect, Rectf(0, 0, 0, 0), 0.0f).delay(delay);
   }
-  
+
   if (animation == "left-to-right") {
-    apply_mask_animation(
-                       animator,
-                       Rectf(bounds),
-                       Rectf(bounds.x2, bounds.y1, bounds.x2, bounds.y2),
-                       duration, delay, ease_fn);
+    apply_mask_animation(animator, Rectf(bounds), Rectf(bounds.x2, bounds.y1, bounds.x2, bounds.y2), duration, delay, ease_fn);
   }
-  
+
   if (animation == "right-to-left") {
-    apply_mask_animation(
-                       animator,
-                       Rectf(bounds),
-                       Rectf(bounds.x1, bounds.y1, bounds.x1, bounds.y2),
-                       duration, delay, ease_fn);
+    apply_mask_animation(animator, Rectf(bounds), Rectf(bounds.x1, bounds.y1, bounds.x1, bounds.y2), duration, delay, ease_fn);
   }
-  
+
   if (animation == "to-center") {
     Rectf end(bounds);
     end.scaleCentered(0.0);
-    apply_mask_animation(
-                       animator,
-                       Rectf(bounds), end,
-                       duration, delay, ease_fn);
+    apply_mask_animation(animator, Rectf(bounds), end, duration, delay, ease_fn);
   }
 }
 
-/**
- * Reveals this sprite with a mask reveal
- */
-void sprite::mask_reveal(
-                        TimelineRef animator, std::string animation,
-                        float duration, float delay, EaseFn ease_fn, bool signal_complete) {
-  
+void sprite::mask_reveal(TimelineRef animator, std::string animation, float duration, float delay, EaseFn ease_fn) {
   if (animation == "none") {
-    animator->appendTo(&mask_rect, Rectf(vec2(0), texture_size), 0.0f).delay(delay).finishFn([&, signal_complete] {
-      if (signal_complete) {
-        sprite::complete.emit();
-      }
-    });
+    animator->appendTo(&mask_rect, Rectf(vec2(0), texture_size), 0.0f).delay(delay);
   }
-  
+
   if (animation == "left-to-right") {
-    apply_mask_animation(
-                       animator,
-                       Rectf(bounds.x1, bounds.y1, bounds.x1, bounds.y2),
-                       Rectf(bounds), duration, delay, ease_fn);
+    apply_mask_animation(animator, Rectf(bounds.x1, bounds.y1, bounds.x1, bounds.y2), Rectf(bounds), duration, delay, ease_fn);
   }
-  
+
   if (animation == "right-to-left") {
-    apply_mask_animation(
-                       animator,
-                       Rectf(bounds.x2, bounds.y1, bounds.x2, bounds.y2),
-                       Rectf(bounds), duration, delay, ease_fn);
+    apply_mask_animation(animator, Rectf(bounds.x2, bounds.y1, bounds.x2, bounds.y2), Rectf(bounds), duration, delay, ease_fn);
   }
-  
+
   if (animation == "from-center") {
     Rectf start(bounds);
     start.scaleCentered(0.0);
-    apply_mask_animation(
-                       animator,
-                       Rectf(start),
-                       Rectf(bounds), duration, delay, ease_fn);
+    apply_mask_animation(animator, Rectf(start), Rectf(bounds), duration, delay, ease_fn);
   }
 }
 
 /**
  * Invokes animation on coordicates
  */
-void sprite::move_to(TimelineRef animator, vec2 target, float duration, float delay, EaseFn ease_fn, bool signal_complete) {
+void sprite::move_to(TimelineRef animator, vec2 target, float duration, float delay, EaseFn ease_fn) {
   if (duration <= 0) {
     offset = target;
-    if (signal_complete) {
-      sprite::complete.emit();
-    }
-  }
-  else {
-    animator->appendTo(&offset, target, duration).delay(delay).easeFn(ease_fn).finishFn([&, signal_complete]{
-      if (signal_complete) {
-        sprite::complete.emit();
-      }
-    });
+  } else {
+    animator->appendTo(&offset, target, duration).delay(delay).easeFn(ease_fn);
   }
 }
 
 /**
  * Invokes animation on scale
  */
-ci::TweenRef<float> sprite::scale_to(TimelineRef animator, float target, float duration, float delay, ci::EaseFn ease_in, bool signal_complete) {
+ci::TweenRef<float> sprite::scale_to(TimelineRef animator, float target, float duration, float delay, ci::EaseFn ease_fn) {
   if (duration <= 0) {
     scale_offset = target;
-    if (signal_complete) {
-      sprite::complete.emit();
-    }
-  }
-  else {
-    return animator->appendTo(&scale_offset, target, duration).delay(delay).easeFn(ease_in)
-    .finishFn([&, signal_complete]{
-      if (signal_complete) {
-        sprite::complete.emit();
-      }
-    });
+    return nullptr;
+  } else {
+    return animator->appendTo(&scale_offset, target, duration).delay(delay).easeFn(ease_fn);
   }
 }
 
 /**
  * Starts media playback from provider
  */
-void sprite::start_media(TimelineRef animator, bool loop, bool cue_complete, bool cue_complete_transition) {
+void sprite::start_media(TimelineRef animator, bool loop, bool cue_complete) {
   provider->start_media(loop);
-  
+
   if (cue_complete) {
     provider->get_media_complete_signal().connect([&] {
       sprite::complete.emit();
     });
   }
-  
-  if (cue_complete_transition) {
-    provider->get_media_complete_signal().connect([&, animator] {
-      alpha_to(animator, 0.0f, 2.0f);
-    });
-  }
 }
 
-void sprite::tint_to(TimelineRef animator, Color target, float duration, float delay, EaseFn ease_fn, bool signal_complete) {
+void sprite::tint_to(TimelineRef animator, Color target, float duration, float delay, EaseFn ease_fn) {
   if (duration <= 0) {
     tint = target;
-    if (signal_complete) {
-      sprite::complete.emit();
-    }
-  }
-  else {
-    animator->appendTo(&tint, target, duration).delay(delay).easeFn(ease_fn).finishFn([&, signal_complete] {
-      if (signal_complete) {
-        sprite::complete.emit();
-      }
-    });
+  } else {
+    animator->appendTo(&tint, target, duration).delay(delay).easeFn(ease_fn);
   }
 }
 
@@ -316,19 +205,19 @@ void sprite::update() {
   if (provider) {
     provider->update();
     if (provider->has_new_texture()) {
-        // set the new texture
+      // set the new texture
       texture = provider->get_texture();
-        // if the size of the texture changes we need to update all size related vars
+      // if the size of the texture changes we need to update all size related vars
       if (texture_size != provider->get_size()) {
-        
-          // set the new texture size
+
+        // set the new texture size
         texture_size = provider->get_size();
-        
-          // update the mask rects to conform to the new
+
+        // update the mask rects to conform to the new
         bounds.set(0, 0, texture_size.x, texture_size.y);
         mask_rect = Rectf(bounds.x1, bounds.y1, bounds.x2, bounds.y2);
-        
-          // need to update the zoom area if the texture size has changed
+
+        // need to update the zoom area if the texture size has changed
         zoom_center = texture_size * 0.5f;
         update_zoom();
       }
@@ -342,7 +231,7 @@ void sprite::update_fbo() {
     if (!fbo) {
       fbo = gl::Fbo::create(texture_size.x, texture_size.y, true);
     }
-    
+
     gl::ScopedMatrices scoped_matrices;
     gl::ScopedFramebuffer scoped_fbo(fbo);
     gl::ScopedViewport scoped_viewport(ivec2(0), fbo->getSize());
@@ -369,23 +258,15 @@ void sprite::update_zoom() {
 /**
  * Invokes an animation on the zoom
  */
-void sprite::zoom_to(TimelineRef animator, float target, float duration, float delay, EaseFn ease_fn, bool signal_complete) {
+void sprite::zoom_to(TimelineRef animator, float target, float duration, float delay, EaseFn ease_fn) {
   if (duration <= 0) {
     zoom = target;
     update_zoom();
     update_fbo();
-    if (signal_complete) {
-      sprite::complete.emit();
-    }
-  }
-  else {
+  } else {
     animator->appendTo(&zoom, glm::clamp(target, 0.0f, 1.0f), duration).delay(delay).easeFn(ease_fn).updateFn([&]{
       update_zoom();
       update_fbo();
-    }).finishFn([&, signal_complete] {
-      if (signal_complete) {
-        sprite::complete.emit();
-      }
     });
   }
 }
