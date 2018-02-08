@@ -75,7 +75,9 @@ void sprite::set_zoom_center(vec2 new_zoom_center) {
 }
 
 void sprite::set_zoom(float new_zoom) {
-  zoom_to(nullptr, new_zoom, 0);
+  zoom = new_zoom;
+  update_zoom();
+  update_fbo();
 }
 
 //////////////////////////////////////////////////////
@@ -88,11 +90,12 @@ texture_provider_ref sprite::get_provider() {
 //////////////////////////////////////////////////////
 // methods
 //////////////////////////////////////////////////////
-void sprite::alpha_to(TimelineRef animator, float target, float duration, float delay, EaseFn ease_fn) {
+ci::TweenRef<float> sprite::alpha_to(TimelineRef animator, float target, float duration, float delay, EaseFn ease_fn) {
   if (duration <= 0) {
     alpha = 0;
+    return nullptr;
   } else {
-    animator->appendTo(&alpha, target, duration).delay(delay).easeFn(ease_fn);
+    return animator->appendTo(&alpha, target, duration).delay(delay).easeFn(ease_fn);
   }
 }
 
@@ -157,11 +160,12 @@ void sprite::mask_reveal(TimelineRef animator, std::string animation, float dura
 /**
  * Invokes animation on coordicates
  */
-void sprite::move_to(TimelineRef animator, vec2 target, float duration, float delay, EaseFn ease_fn) {
+ci::TweenRef<vec2> sprite::move_to(TimelineRef animator, vec2 target, float duration, float delay, EaseFn ease_fn) {
   if (duration <= 0) {
     offset = target;
+    return nullptr;
   } else {
-    animator->appendTo(&offset, target, duration).delay(delay).easeFn(ease_fn);
+    return animator->appendTo(&offset, target, duration).delay(delay).easeFn(ease_fn);
   }
 }
 
@@ -190,11 +194,11 @@ void sprite::start_media(TimelineRef animator, bool loop, bool cue_complete) {
   }
 }
 
-void sprite::tint_to(TimelineRef animator, Color target, float duration, float delay, EaseFn ease_fn) {
+ci::TweenRef<ci::Color> sprite::tint_to(TimelineRef animator, Color target, float duration, float delay, EaseFn ease_fn) {
   if (duration <= 0) {
     tint = target;
   } else {
-    animator->appendTo(&tint, target, duration).delay(delay).easeFn(ease_fn);
+    return animator->appendTo(&tint, target, duration).delay(delay).easeFn(ease_fn);
   }
 }
 
@@ -242,12 +246,6 @@ void sprite::update_fbo() {
   }
 }
 
-
-/**
- * Resets the area to zoom into.
- * This should be called whenver textureSize or zoom parameters are set
- * Creates a crop of the image zoomed into a specific point
- */
 void sprite::update_zoom() {
   float z = 1.0f - zoom;
   vec2 ul = zoom_center - texture_size * 0.5f * z;
@@ -255,16 +253,14 @@ void sprite::update_zoom() {
   zoom_area = Area(ul, lr);
 }
 
-/**
- * Invokes an animation on the zoom
- */
-void sprite::zoom_to(TimelineRef animator, float target, float duration, float delay, EaseFn ease_fn) {
+ci::TweenRef<float> sprite::zoom_to(TimelineRef animator, float target, float duration, float delay, EaseFn ease_fn) {
   if (duration <= 0) {
     zoom = target;
     update_zoom();
     update_fbo();
+    return nullptr;
   } else {
-    animator->appendTo(&zoom, glm::clamp(target, 0.0f, 1.0f), duration).delay(delay).easeFn(ease_fn).updateFn([&]{
+    return animator->appendTo(&zoom, glm::clamp(target, 0.0f, 1.0f), duration).delay(delay).easeFn(ease_fn).updateFn([&]{
       update_zoom();
       update_fbo();
     });

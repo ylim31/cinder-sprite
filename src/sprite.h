@@ -70,7 +70,7 @@ public:
   void draw();
 
   // schedule an alpha animation
-  void alpha_to(
+  ci::TweenRef<float> alpha_to(
     ci::TimelineRef animator,
     float target,
     float duration = 0,
@@ -95,7 +95,7 @@ public:
 
   // schedule an animation to move the sprite
   // relative to coords, applied to offset
-  void move_to(
+  ci::TweenRef<ci::vec2> move_to(
     ci::TimelineRef animator,
     ci::vec2 target,
     float duration = 0,
@@ -114,7 +114,7 @@ public:
   void start_media(ci::TimelineRef animator, bool loop, bool cue_complete);
 
   // schedule an animation to tint the sprite
-  void tint_to(
+  ci::TweenRef<ci::Color> tint_to(
     ci::TimelineRef animator,
     ci::Color target,
     float duration = 0,
@@ -125,7 +125,7 @@ public:
   void update();
 
   // schedule an animation to zoom the sprite
-  void zoom_to(
+  ci::TweenRef<float> zoom_to(
     ci::TimelineRef animator,
     float target,
     float duration = 0,
