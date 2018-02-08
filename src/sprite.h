@@ -19,6 +19,14 @@
 class sprite {
 public:
   //////////////////////////////////////////////////////
+  // enums
+  //////////////////////////////////////////////////////
+  enum origin_point {
+    TopLeft = 0,
+    Center = 1
+  };
+  
+  //////////////////////////////////////////////////////
   // static
   //////////////////////////////////////////////////////
   typedef std::shared_ptr<sprite> sprite_ref;
@@ -52,6 +60,8 @@ public:
   void set_alpha(float new_alpha);
 
   void set_coordinates(ci::vec2 new_coords);
+
+  void set_origin(origin_point new_origin);
 
   void set_provider(texture_provider_ref provider_ref);
 
@@ -143,6 +153,7 @@ private:
   float scale;                // absolute scale of the sprite
   ci::vec2 texture_size;      // width and height of the texture
   ci::gl::TextureRef texture; // the original texture
+  origin_point origin;        // the origin by which to scale and translate this sprite
 
   // animatables
   ci::Anim<ci::Color> tint;       // the tint to be applied to this sprite

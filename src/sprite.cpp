@@ -31,6 +31,7 @@ sprite_ref sprite::create() {
 //////////////////////////////////////////////////////
 sprite::sprite(const texture_provider_ref texture_provider) {
   alpha() = 1.0f;
+  origin = origin_point::TopLeft;
   scale = 1.0f;
   scale_offset() = 1.0f;
   tint() = Color::white();
@@ -40,6 +41,7 @@ sprite::sprite(const texture_provider_ref texture_provider) {
 
 sprite::sprite() {
   alpha() = 1.0f;
+  origin = origin_point::TopLeft;
   scale = 1.0f;
   scale_offset() = 1.0f;
   tint() = Color::white();
@@ -55,6 +57,10 @@ void sprite::set_alpha(float new_alpha) {
 
 void sprite::set_coordinates(vec2 new_coordinates) {
   coordinates = new_coordinates;
+}
+
+void sprite::set_origin(origin_point new_origin) {
+  origin = new_origin;
 }
 
 void sprite::set_provider(texture_provider_ref provider_ref) {
@@ -110,14 +116,15 @@ void sprite::draw() {
     gl::ScopedModelMatrix m1;
     gl::translate(coordinates + offset());
     gl::scale(scale * scale_offset(), scale * scale_offset());
-    gl::translate(-texture_size * 0.5f);
+    if(origin == origin_point::Center) {
+      gl::translate(-texture_size * 0.5f);
+    }
     gl::color(ColorA(tint, alpha));
     gl::draw(crop, Area(mask_rect), mask_rect);
   }
 }
 
 void sprite::mask_hide(TimelineRef animator, std::string animation, float duration, float delay, EaseFn ease_fn) {
-
   if (animation == "none") {
     animator->appendTo(&mask_rect, Rectf(0, 0, 0, 0), 0.0f).delay(delay);
   }
@@ -197,6 +204,7 @@ void sprite::start_media(TimelineRef animator, bool loop, bool cue_complete) {
 ci::TweenRef<ci::Color> sprite::tint_to(TimelineRef animator, Color target, float duration, float delay, EaseFn ease_fn) {
   if (duration <= 0) {
     tint = target;
+    return nullptr;
   } else {
     return animator->appendTo(&tint, target, duration).delay(delay).easeFn(ease_fn);
   }
