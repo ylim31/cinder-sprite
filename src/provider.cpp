@@ -49,6 +49,10 @@ image_provider_ref image_provider::create(gl::TextureRef tex){
   return std::make_shared<image_provider>(tex);
 }
 
+image_provider_ref image_provider::create(){
+  return std::make_shared<image_provider>();
+}
+
 image_provider::image_provider(std::string filename) {
   set_source(filename);
 }
@@ -56,6 +60,8 @@ image_provider::image_provider(std::string filename) {
 image_provider::image_provider(gl::TextureRef tex) {
   set_texture(tex);
 }
+
+image_provider::image_provider() {}
 
 void image_provider::set_source(std::string path) {
   source = path;

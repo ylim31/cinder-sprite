@@ -26,12 +26,16 @@ public:
     Center = 1
   };
   
+  enum provider_type {
+    Image,
+  };
+  
   //////////////////////////////////////////////////////
   // static
   //////////////////////////////////////////////////////
   typedef std::shared_ptr<sprite> sprite_ref;
 
-  static sprite_ref create();
+  static sprite_ref create(provider_type type = provider_type::Image);
 
   static sprite_ref create(texture_provider_ref provider_ref);
 
@@ -42,7 +46,7 @@ public:
   //////////////////////////////////////////////////////
   sprite(const texture_provider_ref texture_provider);
 
-  sprite();
+  sprite(provider_type type = provider_type::Image);
 
   //////////////////////////////////////////////////////
   // properties
@@ -66,6 +70,8 @@ public:
   void set_provider(texture_provider_ref provider_ref);
 
   void set_scale(float new_scale);
+
+  void set_source(std::string);
 
   void set_tint(ci::Color new_tint);
 

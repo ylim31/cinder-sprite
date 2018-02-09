@@ -22,8 +22,8 @@ sprite_ref sprite::create(texture_provider_ref provider){
   return std::make_shared<sprite>(provider);
 }
 
-sprite_ref sprite::create() {
-  return std::make_shared<sprite>();
+sprite_ref sprite::create(provider_type type) {
+  return std::make_shared<sprite>(type);
 }
 
 //////////////////////////////////////////////////////
@@ -39,13 +39,19 @@ sprite::sprite(const texture_provider_ref texture_provider) {
   zoom() = 0.0f;
 }
 
-sprite::sprite() {
+sprite::sprite(provider_type type) {
   alpha() = 1.0f;
   origin = origin_point::TopLeft;
   scale = 1.0f;
   scale_offset() = 1.0f;
   tint() = Color::white();
   zoom() = 0.0f;
+  
+  switch(type) {
+    case provider_type::Image:
+      provider = image_provider::create();
+      break;
+  }
 }
 
 //////////////////////////////////////////////////////
@@ -69,6 +75,14 @@ void sprite::set_provider(texture_provider_ref provider_ref) {
 
 void sprite::set_scale(float new_scale) {
   scale_offset() = std::max(0.0f, new_scale);
+}
+
+void sprite::set_source(std::string source) {
+  if(provider) {
+    provider->set_source(source);
+  } else {
+    CI_LOG_W("Provider is null. Can not set source: " << source);
+  }
 }
 
 void sprite::set_tint(Color new_color) {
