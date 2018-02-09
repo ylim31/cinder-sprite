@@ -37,6 +37,7 @@ sprite::sprite(const texture_provider_ref texture_provider) {
   tint() = Color::white();
   provider = texture_provider;
   zoom() = 0.0f;
+  update();
 }
 
 sprite::sprite(provider_type type) {
@@ -80,6 +81,7 @@ void sprite::set_scale(float new_scale) {
 void sprite::set_source(std::string source) {
   if(provider) {
     provider->set_source(source);
+    update();
   } else {
     CI_LOG_W("Provider is null. Can not set source: " << source);
   }
