@@ -33,7 +33,7 @@ sprite::sprite(const texture_provider_ref texture_provider) {
   alpha() = 1.0f;
   origin = origin_point::TopLeft;
   scale = 1.0f;
-  scale_offset() = 1.0f;
+  scale() = 1.0f;
   tint() = Color::white();
   provider = texture_provider;
   zoom() = 0.0f;
@@ -44,7 +44,7 @@ sprite::sprite(provider_type type) {
   alpha() = 1.0f;
   origin = origin_point::TopLeft;
   scale = 1.0f;
-  scale_offset() = 1.0f;
+  scale() = 1.0f;
   tint() = Color::white();
   zoom() = 0.0f;
   
@@ -72,10 +72,11 @@ void sprite::set_origin(origin_point new_origin) {
 
 void sprite::set_provider(texture_provider_ref provider_ref) {
   provider = provider_ref;
+  update();
 }
 
 void sprite::set_scale(float new_scale) {
-  scale_offset() = std::max(0.0f, new_scale);
+  scale() = std::max(0.0f, new_scale);
 }
 
 void sprite::set_source(std::string source) {
@@ -122,27 +123,27 @@ ci::TweenRef<float> sprite::alpha_to(TimelineRef animator, float target, float d
 }
 
 void sprite::apply_mask_animation(TimelineRef animator, Rectf startMask, Rectf targetMask, float duration, float delay, EaseFn easeFn) {
-  animator->appendTo(&mask_rect, startMask, targetMask, duration).delay(delay).easeFn(easeFn);
+  animator->appendTo(&mask, startMask, targetMask, duration).delay(delay).easeFn(easeFn);
 }
 
 void sprite::draw() {
-  if (alpha() > 0.0 && crop) {
+  if (alpha() > 0.0 && output) {
     gl::ScopedColor sc;
     gl::ScopedBlendAlpha sa;
     gl::ScopedModelMatrix m1;
-    gl::translate(coordinates + offset());
-    gl::scale(scale * scale_offset(), scale * scale_offset());
+    gl::translate(coordinates());
+    gl::scale(scale(), scale());
     if(origin == origin_point::Center) {
       gl::translate(-texture_size * 0.5f);
     }
     gl::color(ColorA(tint, alpha));
-    gl::draw(crop, Area(mask_rect), mask_rect);
+    gl::draw(output, Area(mask), mask);
   }
 }
 
 void sprite::mask_hide(TimelineRef animator, std::string animation, float duration, float delay, EaseFn ease_fn) {
   if (animation == "none") {
-    animator->appendTo(&mask_rect, Rectf(0, 0, 0, 0), 0.0f).delay(delay);
+    animator->appendTo(&mask, Rectf(0, 0, 0, 0), 0.0f).delay(delay);
   }
 
   if (animation == "left-to-right") {
@@ -162,7 +163,7 @@ void sprite::mask_hide(TimelineRef animator, std::string animation, float durati
 
 void sprite::mask_reveal(TimelineRef animator, std::string animation, float duration, float delay, EaseFn ease_fn) {
   if (animation == "none") {
-    animator->appendTo(&mask_rect, Rectf(vec2(0), texture_size), 0.0f).delay(delay);
+    animator->appendTo(&mask, Rectf(vec2(0), texture_size), 0.0f).delay(delay);
   }
 
   if (animation == "left-to-right") {
@@ -185,10 +186,10 @@ void sprite::mask_reveal(TimelineRef animator, std::string animation, float dura
  */
 ci::TweenRef<vec2> sprite::move_to(TimelineRef animator, vec2 target, float duration, float delay, EaseFn ease_fn) {
   if (duration <= 0) {
-    offset = target;
+    coordinates = target;
     return nullptr;
   } else {
-    return animator->appendTo(&offset, target, duration).delay(delay).easeFn(ease_fn);
+    return animator->appendTo(&coordinates, target, duration).delay(delay).easeFn(ease_fn);
   }
 }
 
@@ -197,10 +198,10 @@ ci::TweenRef<vec2> sprite::move_to(TimelineRef animator, vec2 target, float dura
  */
 ci::TweenRef<float> sprite::scale_to(TimelineRef animator, float target, float duration, float delay, ci::EaseFn ease_fn) {
   if (duration <= 0) {
-    scale_offset = target;
+    scale() = target;
     return nullptr;
   } else {
-    return animator->appendTo(&scale_offset, target, duration).delay(delay).easeFn(ease_fn);
+    return animator->appendTo(&scale, target, duration).delay(delay).easeFn(ease_fn);
   }
 }
 
@@ -234,7 +235,7 @@ void sprite::update() {
     provider->update();
     if (provider->has_new_texture()) {
       // set the new texture
-      texture = provider->get_texture();
+      input = provider->get_texture();
       // if the size of the texture changes we need to update all size related vars
       if (texture_size != provider->get_size()) {
 
@@ -243,7 +244,7 @@ void sprite::update() {
 
         // update the mask rects to conform to the new
         bounds.set(0, 0, texture_size.x, texture_size.y);
-        mask_rect = Rectf(bounds.x1, bounds.y1, bounds.x2, bounds.y2);
+        mask = Rectf(bounds.x1, bounds.y1, bounds.x2, bounds.y2);
 
         // need to update the zoom area if the texture size has changed
         zoom_center = texture_size * 0.5f;
@@ -255,7 +256,7 @@ void sprite::update() {
 }
 
 void sprite::update_fbo() {
-  if (texture) {
+  if (input) {
     if (!fbo) {
       fbo = gl::Fbo::create(texture_size.x, texture_size.y, true);
     }
@@ -265,8 +266,8 @@ void sprite::update_fbo() {
     gl::ScopedViewport scoped_viewport(ivec2(0), fbo->getSize());
     gl::setMatricesWindow(fbo->getSize());
     gl::clear(ColorA(0, 0, 0, 0));
-    gl::draw(texture, zoom_area, fbo->getBounds());
-    crop = fbo->getColorTexture();
+    gl::draw(input, zoom_area, fbo->getBounds());
+    output = fbo->getColorTexture();
   }
 }
 

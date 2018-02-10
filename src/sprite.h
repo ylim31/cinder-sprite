@@ -154,25 +154,21 @@ private:
   //////////////////////////////////////////////////////
   // texture
   ci::Rectf bounds;           // normalized bounds
-  ci::Area zoom_area;         // an area used to zoom into the image
-  ci::vec2 coordinates;       // absolute coordinates (center of sprite)
-  float scale;                // absolute scale of the sprite
-  ci::vec2 texture_size;      // width and height of the texture
-  ci::gl::TextureRef texture; // the original texture
+  ci::gl::FboRef fbo;         // an fbo used in the zoom compositing
   origin_point origin;        // the origin by which to scale and translate this sprite
+  ci::gl::TextureRef input;   // the original texture
+  ci::gl::TextureRef output;  // zoomed and cropped texture
+  ci::vec2 texture_size;      // width and height of the texture
+  ci::Area zoom_area;         // an area used to zoom into the image
+  ci::vec2 zoom_center;       // the point to zoom into
 
   // animatables
+  ci::Anim<float> alpha;          // alpha channel
+  ci::Anim<ci::vec2> coordinates; // offset from absolute coords
+  ci::Anim<ci::Rectf> mask;       // rectangular mask
+  ci::Anim<float> scale;          // offset from absolute scale
   ci::Anim<ci::Color> tint;       // the tint to be applied to this sprite
   ci::Anim<float> zoom;           // the level of zooming 0 = none, 1.0 completely zoomed in
-  ci::Anim<float> scale_offset;   // offset from absolute scale
-  ci::Anim<ci::vec2> offset;      // offset from absolute coords
-  ci::Anim<float> alpha;          // alpha channel
-  ci::Anim<ci::Rectf> mask_rect;  // rectangular mask
-
-  // cropping and zooming
-  ci::gl::FboRef fbo;         // an fbo used in the zoom compositing
-  ci::gl::TextureRef crop;    // zoomed and cropped texture
-  ci::vec2 zoom_center;       // the center point to zoom into
 
   //////////////////////////////////////////////////////
   // methods
