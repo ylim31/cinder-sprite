@@ -18,7 +18,7 @@ using namespace ci::app;
 ////////////////////////////////////////////////////
 ci::signals::Signal<void()> sprite::complete;
 
-sprite_ref sprite::create(texture_provider_ref provider){
+sprite_ref sprite::create(const texture_provider_ref provider){
   return std::make_shared<sprite>(provider);
 }
 
@@ -124,6 +124,14 @@ ci::TweenRef<float> sprite::alpha_to(TimelineRef animator, float target, float d
 
 void sprite::apply_mask_animation(TimelineRef animator, Rectf startMask, Rectf targetMask, float duration, float delay, EaseFn easeFn) {
   animator->appendTo(&mask, startMask, targetMask, duration).delay(delay).easeFn(easeFn);
+}
+
+bool sprite::contains_point(ci::vec2 p) {
+  ci::Rectf b(bounds);
+  b.offset(coordinates());
+  if(origin == origin_point::Center) b.offset(-bounds.getSize() * 0.5f);
+  b.scaleCentered(scale());
+  return b.contains(p);
 }
 
 void sprite::draw() {

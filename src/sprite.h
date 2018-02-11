@@ -37,7 +37,7 @@ public:
 
   static sprite_ref create(provider_type type = provider_type::Image);
 
-  static sprite_ref create(texture_provider_ref provider_ref);
+  static sprite_ref create(const texture_provider_ref provider_ref);
 
   static ci::signals::Signal<void()> complete;
 
@@ -82,6 +82,8 @@ public:
   //////////////////////////////////////////////////////
   // methods
   //////////////////////////////////////////////////////
+  bool contains_point(ci::vec2 p);
+  
   // draw the sprite
   void draw();
 
@@ -148,7 +150,7 @@ public:
     float delay = 0,
     ci::EaseFn fn = ci::easeInOutQuad);
 
-private:
+protected:
   //////////////////////////////////////////////////////
   // properties
   //////////////////////////////////////////////////////
