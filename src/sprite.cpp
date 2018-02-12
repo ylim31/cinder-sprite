@@ -118,12 +118,12 @@ ci::TweenRef<float> sprite::alpha_to(TimelineRef animator, float target, float d
     alpha = 0;
     return nullptr;
   } else {
-    return animator->appendTo(&alpha, target, duration).delay(delay).easeFn(ease_fn);
+    return animator->apply(&alpha, target, duration).delay(delay).easeFn(ease_fn);
   }
 }
 
 void sprite::apply_mask_animation(TimelineRef animator, Rectf startMask, Rectf targetMask, float duration, float delay, EaseFn easeFn) {
-  animator->appendTo(&mask, startMask, targetMask, duration).delay(delay).easeFn(easeFn);
+  animator->apply(&mask, startMask, targetMask, duration).delay(delay).easeFn(easeFn);
 }
 
 bool sprite::contains_point(ci::vec2 p) {
@@ -151,7 +151,7 @@ void sprite::draw() {
 
 void sprite::mask_hide(TimelineRef animator, std::string animation, float duration, float delay, EaseFn ease_fn) {
   if (animation == "none") {
-    animator->appendTo(&mask, Rectf(0, 0, 0, 0), 0.0f).delay(delay);
+    animator->apply(&mask, Rectf(0, 0, 0, 0), 0.0f).delay(delay);
   }
 
   if (animation == "left-to-right") {
@@ -197,7 +197,7 @@ ci::TweenRef<vec2> sprite::move_to(TimelineRef animator, vec2 target, float dura
     coordinates = target;
     return nullptr;
   } else {
-    return animator->appendTo(&coordinates, target, duration).delay(delay).easeFn(ease_fn);
+    return animator->apply(&coordinates, target, duration).delay(delay).easeFn(ease_fn);
   }
 }
 
@@ -209,7 +209,7 @@ ci::TweenRef<float> sprite::scale_to(TimelineRef animator, float target, float d
     scale() = target;
     return nullptr;
   } else {
-    return animator->appendTo(&scale, target, duration).delay(delay).easeFn(ease_fn);
+    return animator->apply(&scale, target, duration).delay(delay).easeFn(ease_fn);
   }
 }
 
@@ -231,7 +231,7 @@ ci::TweenRef<ci::Color> sprite::tint_to(TimelineRef animator, Color target, floa
     tint = target;
     return nullptr;
   } else {
-    return animator->appendTo(&tint, target, duration).delay(delay).easeFn(ease_fn);
+    return animator->apply(&tint, target, duration).delay(delay).easeFn(ease_fn);
   }
 }
 
@@ -293,7 +293,7 @@ ci::TweenRef<float> sprite::zoom_to(TimelineRef animator, float target, float du
     update_fbo();
     return nullptr;
   } else {
-    return animator->appendTo(&zoom, glm::clamp(target, 0.0f, 1.0f), duration).delay(delay).easeFn(ease_fn).updateFn([&]{
+    return animator->apply(&zoom, glm::clamp(target, 0.0f, 1.0f), duration).delay(delay).easeFn(ease_fn).updateFn([&]{
       update_zoom();
       update_fbo();
     });
