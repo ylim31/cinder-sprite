@@ -106,6 +106,14 @@ void sprite::set_zoom(float new_zoom) {
 //////////////////////////////////////////////////////
 // getters
 //////////////////////////////////////////////////////
+ci::Rectf sprite::get_bounds() {
+  ci::Rectf b = Rectf(bounds);
+  b.offset(coordinates);
+  if(origin == origin_point::Center) b.offset(-bounds.getSize() * 0.5f);
+  b.scaleCentered(scale());
+  return b;
+}
+
 texture_provider_ref sprite::get_provider() {
   return provider;
 }
