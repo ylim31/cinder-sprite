@@ -20,7 +20,7 @@ class custom_graphics : public graphics_provider {
 
 custom_graphics::custom_graphics(vec2 size) : graphics_provider(size) {
   p = vec2(256, 256);
-  getWindow()->getSignalMouseDown().connect([=](MouseEvent e) {
+  getWindow()->getSignalMouseMove().connect([=](MouseEvent e) {
     target = e.getPos();
   });
 }
