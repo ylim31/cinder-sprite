@@ -20,6 +20,7 @@ class custom_graphics : public graphics_provider {
 
 custom_graphics::custom_graphics(vec2 size) : graphics_provider(size) {
   p = vec2(256, 256);
+  target = vec2(256, 256);
   getWindow()->getSignalMouseMove().connect([=](MouseEvent e) {
     target = e.getPos();
   });
@@ -55,8 +56,8 @@ void GraphicsSpriteDemoApp::setup() {
 }
 
 void GraphicsSpriteDemoApp::loop() {
-  graphics->alpha_to(animator, 0.0f, 3.0f)->setFinishFn([=] {
-    graphics->alpha_to(animator, 1.0f, 3.0f)->setFinishFn([=] {
+  graphics->alpha_to(0.0f, 3.0f)->setFinishFn([=] {
+    graphics->alpha_to(1.0f, 3.0f)->setFinishFn([=] {
       loop();
     });
   });

@@ -17,12 +17,10 @@ class SpriteDemoApp : public App {
 public:
   void setup() override;
   void mouseDown( MouseEvent event ) override;
-  void update() override;
   void draw() override;
   void loop();
   sprite_ref stars;
   sprite_ref sonic;
-  TimelineRef animator;
   float start;
   bool first;
 };
@@ -31,7 +29,6 @@ void SpriteDemoApp::setup() {
   first = true;
   ci::app::setWindowSize(vec2(960, 540));
   
-  animator = Timeline::create();
   stars = sprite::create(image_provider::create("stars.jpg"));
   stars->set_origin(sprite::origin_point::TopLeft);
   stars->set_alpha(0.3);
@@ -44,22 +41,18 @@ void SpriteDemoApp::setup() {
 }
 
 void SpriteDemoApp::loop() {
-  stars->move_to(animator,
+  stars->move_to(
     vec2(0, getWindowHeight() - stars->get_bounds().getHeight()), 120.0f, 0.0f)->setFinishFn([=] {
-    stars->move_to(animator,
+    stars->move_to(
       vec2(0, 0), 120.0f, 0.0f)->setFinishFn(std::bind(&SpriteDemoApp::loop, this));
   });
 }
 
 void SpriteDemoApp::mouseDown(MouseEvent event)  {
   first = false;
-  sonic->mask_reveal(animator, "from-center", first ? 0.001 : 2.0)->setFinishFn([=] {
-    sonic->mask_hide(animator, "to-center", 2.0f);
+  sonic->mask_reveal(sprite::mask_type::FromCenter, first ? 0.001 : 2.0)->setFinishFn([=] {
+    sonic->mask_hide(sprite::mask_type::ToCenter, 2.0f);
   });
-}
-
-void SpriteDemoApp::update() {
-  animator->stepTo(getElapsedSeconds(), true);
 }
 
 void SpriteDemoApp::draw() {

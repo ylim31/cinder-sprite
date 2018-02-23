@@ -97,8 +97,6 @@ vec2 graphics_provider::get_size() {
 }
 
 bool graphics_provider::is_ready() {
-  // TODO: Implement this function
-  // if texture is not null, we're ready
   return true;
 };
 

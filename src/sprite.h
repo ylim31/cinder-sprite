@@ -28,6 +28,15 @@ public:
   
   enum provider_type {
     Image,
+    Graphics
+  };
+  
+  enum mask_type {
+    None,
+    ToCenter,
+    FromCenter,
+    LeftToRight,
+    RightToLeft
   };
   
   //////////////////////////////////////////////////////
@@ -40,6 +49,10 @@ public:
   static sprite_ref create(const texture_provider_ref provider_ref);
 
   static ci::signals::Signal<void()> complete;
+  
+  static ci::TimelineRef timeline;
+  
+  static void init();
 
   //////////////////////////////////////////////////////
   // ctr(s) / dctr(s)
@@ -91,7 +104,6 @@ public:
 
   // schedule an alpha animation
   ci::TweenRef<float> alpha_to(
-    ci::TimelineRef animator,
     float target,
     float duration = 0,
     float delay = 0,
@@ -99,16 +111,14 @@ public:
 
   // schedule a mask animation to hide the sprite
   ci::TweenRef<ci::Rectf> mask_hide(
-    ci::TimelineRef animator,
-    std::string animation,
+    mask_type type,
     float duration =0 ,
     float delay = 0,
     ci::EaseFn fn = ci::easeInOutQuad);
 
   // schedule a mask animation to reveal the sprite
   ci::TweenRef<ci::Rectf> mask_reveal(
-    ci::TimelineRef animator,
-    std::string animation,
+    mask_type type,
     float duration = 0,
     float delay = 0,
     ci::EaseFn fn = ci::easeInOutQuad);
@@ -116,7 +126,6 @@ public:
   // schedule an animation to move the sprite
   // relative to coords, applied to offset
   ci::TweenRef<ci::vec2> move_to(
-    ci::TimelineRef animator,
     ci::vec2 target,
     float duration = 0,
     float delay = 0,
@@ -124,7 +133,6 @@ public:
 
   // schedule an animation to scale the sprite
   ci::TweenRef<float> scale_to(
-    ci::TimelineRef animator,
     float target,
     float duration = 0,
     float delay = 0,
@@ -135,7 +143,6 @@ public:
 
   // schedule an animation to tint the sprite
   ci::TweenRef<ci::Color> tint_to(
-    ci::TimelineRef animator,
     ci::Color target,
     float duration = 0,
     float delay = 0,
@@ -146,7 +153,6 @@ public:
 
   // schedule an animation to zoom the sprite
   ci::TweenRef<float> zoom_to(
-    ci::TimelineRef animator,
     float target,
     float duration = 0,
     float delay = 0,
@@ -182,7 +188,6 @@ protected:
   void update_fbo();   // update the fbo
 
   ci::TweenRef<ci::Rectf> apply_mask_animation(
-    ci::TimelineRef animator,
     ci::Rectf mask_start,
     ci::Rectf mask_target,
     float duration, float delay,
