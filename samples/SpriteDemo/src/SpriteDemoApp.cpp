@@ -19,35 +19,55 @@ public:
   void mouseDown( MouseEvent event ) override;
   void update() override;
   void draw() override;
-  sprite_ref sprite;
+  void loop();
+  sprite_ref stars;
+  sprite_ref sonic;
   TimelineRef animator;
   float start;
-  float time;
+  bool first;
 };
 
 void SpriteDemoApp::setup() {
+  first = true;
+  ci::app::setWindowSize(vec2(960, 540));
+  
   animator = Timeline::create();
-  sprite = sprite::create(image_provider::create("sonic.jpg"));
-  sprite->update();
+  stars = sprite::create(image_provider::create("stars.jpg"));
+  stars->set_origin(sprite::origin_point::TopLeft);
+  stars->set_alpha(0.3);
+  
+  sonic = sprite::create(image_provider::create("sonic.jpg"));
+  sonic->set_origin(sprite::origin_point::Center);
+  sonic->set_coordinates(getWindowCenter());
+  
+  loop();
+}
+
+void SpriteDemoApp::loop() {
+  stars->move_to(animator,
+    vec2(0, getWindowHeight() - stars->get_bounds().getHeight()), 120.0f, 0.0f)->setFinishFn([=] {
+    stars->move_to(animator,
+      vec2(0, 0), 120.0f, 0.0f)->setFinishFn(std::bind(&SpriteDemoApp::loop, this));
+  });
 }
 
 void SpriteDemoApp::mouseDown(MouseEvent event)  {
-  time = start = getElapsedSeconds();
-  int x = ci::randFloat() * getWindowWidth();
-  int y = ci::randFloat() * getWindowHeight();
-  sprite->move_to(animator, vec2(x, y), 2.0f);
-  sprite->mask_hide(animator, "right-to-left", 2.0f, 2.0f);
+  first = false;
+  sonic->mask_reveal(animator, "from-center", first ? 0.001 : 2.0)->setFinishFn([=] {
+    sonic->mask_hide(animator, "to-center", 2.0f, 2.0f);
+  });
 }
 
 void SpriteDemoApp::update() {
-  //animator->step(1/(getAverageFps() * 1000));
   animator->stepTo(getElapsedSeconds(), true);
 }
 
 void SpriteDemoApp::draw() {
   gl::clear(Color(0, 0, 0));
   gl::color(Color::white());
-  sprite->draw();
+  sonic->draw();
+  ci::gl::ScopedBlendAdditive blend;
+  stars->draw();
 }
 
 CINDER_APP(SpriteDemoApp, RendererGl)
