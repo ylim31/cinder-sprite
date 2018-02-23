@@ -54,7 +54,7 @@ void SpriteDemoApp::loop() {
 void SpriteDemoApp::mouseDown(MouseEvent event)  {
   first = false;
   sonic->mask_reveal(animator, "from-center", first ? 0.001 : 2.0)->setFinishFn([=] {
-    sonic->mask_hide(animator, "to-center", 2.0f, 2.0f);
+    sonic->mask_hide(animator, "to-center", 2.0f);
   });
 }
 

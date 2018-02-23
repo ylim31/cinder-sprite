@@ -78,6 +78,36 @@ bool image_provider::is_ready() {
 
 /////////////////////////////////////////////////
 //
+//  graphics_provider
+//
+/////////////////////////////////////////////////
+graphics_provider_ref graphics_provider::create(ci::vec2 size, bool transparent) {
+  return std::make_shared<graphics_provider>(size, transparent);
+}
+
+graphics_provider::graphics_provider(ci::vec2 size, bool transparent) {
+  gl::Fbo::Format format;
+  format.setSamples(8);
+  fbo = ci::gl::Fbo::create(size.x, size.y, format);
+  
+}
+
+vec2 graphics_provider::get_size() {
+  return fbo->getSize();
+}
+
+bool graphics_provider::is_ready() {
+  // TODO: Implement this function
+  // if texture is not null, we're ready
+  return true;
+};
+
+void graphics_provider::update() {
+  
+}
+
+/////////////////////////////////////////////////
+//
 //  VideoProvider
 //
 /////////////////////////////////////////////////

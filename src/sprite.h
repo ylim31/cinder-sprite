@@ -98,7 +98,7 @@ public:
     ci::EaseFn fn = ci::easeInOutQuad);
 
   // schedule a mask animation to hide the sprite
-  void mask_hide(
+  ci::TweenRef<ci::Rectf> mask_hide(
     ci::TimelineRef animator,
     std::string animation,
     float duration =0 ,
@@ -106,7 +106,7 @@ public:
     ci::EaseFn fn = ci::easeInOutQuad);
 
   // schedule a mask animation to reveal the sprite
-  void mask_reveal(
+  ci::TweenRef<ci::Rectf> mask_reveal(
     ci::TimelineRef animator,
     std::string animation,
     float duration = 0,
@@ -181,7 +181,7 @@ protected:
 
   void update_fbo();   // update the fbo
 
-  void apply_mask_animation(
+  ci::TweenRef<ci::Rectf> apply_mask_animation(
     ci::TimelineRef animator,
     ci::Rectf mask_start,
     ci::Rectf mask_target,

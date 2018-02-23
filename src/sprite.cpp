@@ -130,8 +130,8 @@ ci::TweenRef<float> sprite::alpha_to(TimelineRef animator, float target, float d
   }
 }
 
-void sprite::apply_mask_animation(TimelineRef animator, Rectf startMask, Rectf targetMask, float duration, float delay, EaseFn easeFn) {
-  animator->apply(&mask, startMask, targetMask, duration).delay(delay).easeFn(easeFn);
+ci::TweenRef<ci::Rectf> sprite::apply_mask_animation(TimelineRef animator, Rectf startMask, Rectf targetMask, float duration, float delay, EaseFn easeFn) {
+  return animator->apply(&mask, startMask, targetMask, duration).delay(delay).easeFn(easeFn);
 }
 
 bool sprite::contains_point(ci::vec2 p) {
@@ -157,43 +157,43 @@ void sprite::draw() {
   }
 }
 
-void sprite::mask_hide(TimelineRef animator, std::string animation, float duration, float delay, EaseFn ease_fn) {
+ci::TweenRef<ci::Rectf> sprite::mask_hide(TimelineRef animator, std::string animation, float duration, float delay, EaseFn ease_fn) {
   if (animation == "none") {
-    animator->apply(&mask, Rectf(0, 0, 0, 0), 0.0f).delay(delay);
+    return animator->apply(&mask, Rectf(0, 0, 0, 0), 0.0f).delay(delay);
   }
 
   if (animation == "left-to-right") {
-    apply_mask_animation(animator, Rectf(bounds), Rectf(bounds.x2, bounds.y1, bounds.x2, bounds.y2), duration, delay, ease_fn);
+    return apply_mask_animation(animator, Rectf(bounds), Rectf(bounds.x2, bounds.y1, bounds.x2, bounds.y2), duration, delay, ease_fn);
   }
 
   if (animation == "right-to-left") {
-    apply_mask_animation(animator, Rectf(bounds), Rectf(bounds.x1, bounds.y1, bounds.x1, bounds.y2), duration, delay, ease_fn);
+    return apply_mask_animation(animator, Rectf(bounds), Rectf(bounds.x1, bounds.y1, bounds.x1, bounds.y2), duration, delay, ease_fn);
   }
 
   if (animation == "to-center") {
     Rectf end(bounds);
     end.scaleCentered(0.0);
-    apply_mask_animation(animator, Rectf(bounds), end, duration, delay, ease_fn);
+    return apply_mask_animation(animator, Rectf(bounds), end, duration, delay, ease_fn);
   }
 }
 
-void sprite::mask_reveal(TimelineRef animator, std::string animation, float duration, float delay, EaseFn ease_fn) {
+ci::TweenRef<ci::Rectf> sprite::mask_reveal(TimelineRef animator, std::string animation, float duration, float delay, EaseFn ease_fn) {
   if (animation == "none") {
-    animator->appendTo(&mask, Rectf(vec2(0), texture_size), 0.0f).delay(delay);
+    return animator->appendTo(&mask, Rectf(vec2(0), texture_size), 0.0f).delay(delay);
   }
 
   if (animation == "left-to-right") {
-    apply_mask_animation(animator, Rectf(bounds.x1, bounds.y1, bounds.x1, bounds.y2), Rectf(bounds), duration, delay, ease_fn);
+    return apply_mask_animation(animator, Rectf(bounds.x1, bounds.y1, bounds.x1, bounds.y2), Rectf(bounds), duration, delay, ease_fn);
   }
 
   if (animation == "right-to-left") {
-    apply_mask_animation(animator, Rectf(bounds.x2, bounds.y1, bounds.x2, bounds.y2), Rectf(bounds), duration, delay, ease_fn);
+    return apply_mask_animation(animator, Rectf(bounds.x2, bounds.y1, bounds.x2, bounds.y2), Rectf(bounds), duration, delay, ease_fn);
   }
 
   if (animation == "from-center") {
     Rectf start(bounds);
     start.scaleCentered(0.0);
-    apply_mask_animation(animator, Rectf(start), Rectf(bounds), duration, delay, ease_fn);
+    return apply_mask_animation(animator, Rectf(start), Rectf(bounds), duration, delay, ease_fn);
   }
 }
 
@@ -250,6 +250,7 @@ void sprite::update() {
   if (provider) {
     provider->update();
     if (provider->has_new_texture()) {
+      // TODO: This seems a odd, look into more clear or correct way to handle texture size changes
       // set the new texture
       input = provider->get_texture();
       // if the size of the texture changes we need to update all size related vars
