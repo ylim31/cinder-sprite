@@ -179,6 +179,9 @@ protected:
   ci::Anim<float> scale;          // offset from absolute scale
   ci::Anim<ci::Color> tint;       // the tint to be applied to this sprite
   ci::Anim<float> zoom;           // the level of zooming 0 = none, 1.0 completely zoomed in
+  
+  // handlers
+  ci::signals::Connection texture_update_handler;
 
   //////////////////////////////////////////////////////
   // methods

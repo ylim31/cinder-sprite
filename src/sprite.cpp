@@ -35,9 +35,9 @@ sprite::sprite(const texture_provider_ref texture_provider) {
   scale = 1.0f;
   scale() = 1.0f;
   tint() = Color::white();
-  provider = texture_provider;
   zoom() = 0.0f;
-  update();
+  
+  set_provider(texture_provider);
 }
 
 sprite::sprite(provider_type type) {
@@ -50,10 +50,10 @@ sprite::sprite(provider_type type) {
   
   switch(type) {
     case provider_type::Image:
-      provider = image_provider::create();
+      set_provider(image_provider::create());
       break;
     case provider_type::Graphics:
-      provider = graphics_provider::create(ci::vec2(512, 512));
+      set_provider(graphics_provider::create(ci::vec2(512, 512)));
       break;
   }
 }
@@ -76,6 +76,16 @@ void sprite::set_origin(origin_point new_origin) {
 void sprite::set_provider(texture_provider_ref provider_ref) {
   provider = provider_ref;
   update();
+  
+  if(texture_update_handler.isConnected()) {
+    texture_update_handler.disable();
+    texture_update_handler.disconnect();
+  }
+  
+  // Add a handler for texture updates from provider
+  texture_update_handler = provider->texture_update.connect([=] {
+    update();
+  });
 }
 
 void sprite::set_scale(float new_scale) {
@@ -85,7 +95,6 @@ void sprite::set_scale(float new_scale) {
 void sprite::set_source(std::string source) {
   if(provider) {
     provider->set_source(source);
-    update();
   } else {
     CI_LOG_W("Provider is null. Can not set source: " << source);
   }
@@ -255,7 +264,6 @@ ci::TweenRef<ci::Color> sprite::tint_to(Color target, float duration, float dela
  */
 void sprite::update() {
   if (provider) {
-    provider->update();
     if (provider->has_new_texture()) {
       // TODO: This seems a odd, look into more clear or correct way to handle texture size changes
       // set the new texture

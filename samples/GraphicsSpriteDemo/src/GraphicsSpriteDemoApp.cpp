@@ -44,33 +44,31 @@ class GraphicsSpriteDemoApp : public App {
 	void draw() override;
   void loop();
  
-  sprite_ref graphics;
-  TimelineRef animator;
+  sprite_ref sp;
+  std::shared_ptr<custom_graphics> graphics;
 };
 
 void GraphicsSpriteDemoApp::setup() {
-  animator = Timeline::create();
-  graphics = sprite::create(
-   std::make_shared<custom_graphics>(vec2(512, 512)));
+  graphics = std::make_shared<custom_graphics>(vec2(512, 512));
+  sp = sprite::create(graphics);
   loop();
 }
 
 void GraphicsSpriteDemoApp::loop() {
-  graphics->alpha_to(0.0f, 3.0f)->setFinishFn([=] {
-    graphics->alpha_to(1.0f, 3.0f)->setFinishFn([=] {
+  sp->alpha_to(0.0f, 3.0f)->setFinishFn([=] {
+    sp->alpha_to(1.0f, 3.0f)->setFinishFn([=] {
       loop();
     });
   });
 }
 
 void GraphicsSpriteDemoApp::update() {
-  animator->stepTo(getElapsedSeconds(), true);
   graphics->update();
 }
 
 void GraphicsSpriteDemoApp::draw() {
 	gl::clear(Color(0, 0, 0));
-  graphics->draw();
+  sp->draw();
 }
 
 CINDER_APP(GraphicsSpriteDemoApp, RendererGl(RendererGl::Options().msaa(16)))

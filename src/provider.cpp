@@ -14,9 +14,10 @@ using namespace ci::app;
 //  Base class for texture providers
 //
 /////////////////////////////////////////////////
-void texture_provider::set_texture(gl::TextureRef newTexture) {
+void texture_provider::set_texture(const gl::TextureRef & newTexture) {
   texture_is_new = true;
   texture = newTexture;
+  texture_update.emit();
 }
 
 signals::Signal<void()> & texture_provider::get_media_complete_signal() {
@@ -61,7 +62,9 @@ image_provider::image_provider(gl::TextureRef tex) {
   set_texture(tex);
 }
 
-image_provider::image_provider() {}
+image_provider::image_provider() {
+  texture_is_new = false;
+}
 
 void image_provider::set_source(std::string path) {
   source = path;
