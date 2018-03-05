@@ -34,3 +34,4 @@
 # XCode
 DerivedData/
 build/
+*.xcworkspace
