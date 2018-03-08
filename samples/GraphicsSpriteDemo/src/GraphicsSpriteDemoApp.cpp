@@ -13,7 +13,7 @@ using namespace std;
 class custom_graphics : public graphics_provider {
   public:
     custom_graphics(vec2 size);
-    void update() override;
+    void draw() override;
     Anim<vec2> p;
     vec2 target;
 };
@@ -26,15 +26,9 @@ custom_graphics::custom_graphics(vec2 size) : graphics_provider(size) {
   });
 }
 
-void custom_graphics::update() {
+void custom_graphics::draw() {
   p() += (target - p()) * 0.2f;
-  gl::ScopedMatrices scoped_matrices;
-  gl::ScopedFramebuffer scoped_fbo(fbo);
-  gl::ScopedViewport scoped_viewport(ivec2(0), fbo->getSize());
-  gl::setMatricesWindow(fbo->getSize());
-  gl::clear(ColorA(1, 0, 0, 1));
   gl::drawSolidCircle(p, 32);
-  set_texture(fbo->getColorTexture());
 }
 
 class GraphicsSpriteDemoApp : public App {

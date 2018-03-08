@@ -118,13 +118,6 @@ typedef image_provider::image_provider_ref image_provider_ref;
 class graphics_provider : public texture_provider {
 public:
   //////////////////////////////////////////////////////
-  // static
-  //////////////////////////////////////////////////////
-  typedef std::shared_ptr<graphics_provider> graphics_provider_ref;
-  
-  static graphics_provider_ref create(ci::vec2 size, bool transparent=true);
-  
-  //////////////////////////////////////////////////////
   // ctr(s)
   //////////////////////////////////////////////////////
   graphics_provider(ci::vec2 size, bool transparent=true);
@@ -145,14 +138,11 @@ public:
   
   void update() override;
   
+  virtual void draw() = 0;
+  
 protected:
   ci::gl::FboRef fbo;
 };
-
-//////////////////////////////////////////////////////
-// typedefs
-//////////////////////////////////////////////////////
-typedef graphics_provider::graphics_provider_ref graphics_provider_ref;
 
 // TODO: Implement platform specific provider for Quicktime & WMFVideoPlayer
 

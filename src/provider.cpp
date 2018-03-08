@@ -84,10 +84,6 @@ bool image_provider::is_ready() {
 //  graphics_provider
 //
 /////////////////////////////////////////////////
-graphics_provider_ref graphics_provider::create(ci::vec2 size, bool transparent) {
-  return std::make_shared<graphics_provider>(size, transparent);
-}
-
 graphics_provider::graphics_provider(ci::vec2 size, bool transparent) {
   gl::Fbo::Format format;
   format.setSamples(8);
@@ -104,7 +100,13 @@ bool graphics_provider::is_ready() {
 };
 
 void graphics_provider::update() {
-  
+  gl::ScopedMatrices scoped_matrices;
+  gl::ScopedFramebuffer scoped_fbo(fbo);
+  gl::ScopedViewport scoped_viewport(ivec2(0), fbo->getSize());
+  gl::setMatricesWindow(fbo->getSize());
+  gl::clear(ColorA(1, 0, 0, 1));
+  draw();
+  set_texture(fbo->getColorTexture());
 }
 
 /////////////////////////////////////////////////

@@ -52,8 +52,7 @@ sprite::sprite(provider_type type) {
     case provider_type::Image:
       set_provider(image_provider::create());
       break;
-    case provider_type::Graphics:
-      set_provider(graphics_provider::create(ci::vec2(512, 512)));
+    default:
       break;
   }
 }
