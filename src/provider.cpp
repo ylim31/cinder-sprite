@@ -100,11 +100,11 @@ bool graphics_provider::is_ready() {
 };
 
 void graphics_provider::update() {
-  gl::ScopedMatrices scoped_matrices;
   gl::ScopedFramebuffer scoped_fbo(fbo);
+  gl::ScopedMatrices scoped_matrices;
   gl::ScopedViewport scoped_viewport(ivec2(0), fbo->getSize());
   gl::setMatricesWindow(fbo->getSize());
-  gl::clear(ColorA(1, 0, 0, 1));
+  gl::clear(ColorA(0, 0, 0, 0));
   draw();
   set_texture(fbo->getColorTexture());
 }

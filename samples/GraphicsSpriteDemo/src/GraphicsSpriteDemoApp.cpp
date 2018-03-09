@@ -27,8 +27,14 @@ custom_graphics::custom_graphics(vec2 size) : graphics_provider(size) {
 }
 
 void custom_graphics::draw() {
-  p() += (target - p()) * 0.2f;
-  gl::drawSolidCircle(p, 32);
+  {
+    gl::ScopedColor c;
+    gl::color(1, 0, 0);
+    gl::drawSolidRect(fbo->getBounds());
+    gl::color(1, 1, 1);
+    p() += (target - p()) * 0.2f;
+    gl::drawSolidCircle(p, 32);
+  }
 }
 
 class GraphicsSpriteDemoApp : public App {
