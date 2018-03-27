@@ -85,6 +85,8 @@ public:
   void set_provider(texture_provider_ref provider_ref);
 
   void set_scale(float new_scale);
+  
+  void set_scale(ci::vec2 new_scale);
 
   void set_source(std::string);
 
@@ -97,7 +99,7 @@ public:
   //////////////////////////////////////////////////////
   // methods
   //////////////////////////////////////////////////////
-  bool contains_point(ci::vec2 p);
+  bool contains_point(const ci::vec2 & p);
   
   // draw the sprite
   void draw();
@@ -132,14 +134,17 @@ public:
     ci::EaseFn fn = ci::easeInOutQuad);
 
   // schedule an animation to scale the sprite
-  ci::TweenRef<float> scale_to(
+  ci::TweenRef<ci::vec2> scale_to(
+    ci::vec2 target,
+    float duration = 0,
+    float delay = 0,
+    ci::EaseFn fn = ci::easeInOutQuad);
+  
+  ci::TweenRef<ci::vec2> scale_to(
     float target,
     float duration = 0,
     float delay = 0,
     ci::EaseFn fn = ci::easeInOutQuad);
-
-  // schedule an animation to start media
-  void start_media(ci::TimelineRef animator, bool loop, bool cue_complete);
 
   // schedule an animation to tint the sprite
   ci::TweenRef<ci::Color> tint_to(
@@ -174,9 +179,9 @@ protected:
 
   // animatables
   ci::Anim<float> alpha;          // alpha channel
-  ci::Anim<ci::vec2> coordinates; // offset from absolute coords
+  ci::Anim<ci::vec2> coordinates; // x, y coords
   ci::Anim<ci::Rectf> mask;       // rectangular mask
-  ci::Anim<float> scale;          // offset from absolute scale
+  ci::Anim<ci::vec2> scale;       // scale of this sprite
   ci::Anim<ci::Color> tint;       // the tint to be applied to this sprite
   ci::Anim<float> zoom;           // the level of zooming 0 = none, 1.0 completely zoomed in
   

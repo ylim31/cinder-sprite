@@ -2,11 +2,12 @@
 
   // cinder
 #include "cinder/gl/Texture.h"
+#include "cinder/qtime/QuickTimeGl.h"
 
 
 /////////////////////////////////////////////////
 //
-//  TextureProvider
+//  texture_provider
 //  Base class for texture providers
 //
 /////////////////////////////////////////////////
@@ -37,8 +38,6 @@ public:
   
   virtual void set_source(std::string path) = 0;
   
-  virtual void start_media(bool loop){};
-  
   virtual void update() = 0;
   
 protected:
@@ -65,7 +64,7 @@ typedef std::shared_ptr<texture_provider> texture_provider_ref;
 
 /////////////////////////////////////////////////
 //
-//  ImageProvider
+//  image_provider
 //
 /////////////////////////////////////////////////
 class image_provider : virtual public texture_provider {
@@ -112,11 +111,16 @@ typedef image_provider::image_provider_ref image_provider_ref;
 
 /////////////////////////////////////////////////
 //
-//  GraphicsProvider
+//  graphics_provider
 //
 /////////////////////////////////////////////////
 class graphics_provider : public texture_provider {
 public:
+  typedef std::shared_ptr<graphics_provider> graphics_provider_ref;
+  graphics_provider_ref create(ci::vec2 size, bool transparent=true) {
+    return std::make_shared<graphics_provider>(size, transparent);
+  }
+
   //////////////////////////////////////////////////////
   // ctr(s)
   //////////////////////////////////////////////////////
@@ -134,17 +138,48 @@ public:
   
   void set_source(std::string path) override {};
   
-  void start_media(bool loop) override {};
-  
   void update() override;
   
-  virtual void draw() = 0;
+  virtual void draw() {};
+  
+  void set_background(ci::ColorA c);
   
 protected:
   ci::gl::FboRef fbo;
-};
+  ci::ColorA background;
+}; typedef graphics_provider::graphics_provider_ref graphics_provider_ref;
 
 // TODO: Implement platform specific provider for Quicktime & WMFVideoPlayer
+
+/////////////////////////////////////////////////
+//
+//  VideoProvider
+//
+/////////////////////////////////////////////////
+class video_provider : public texture_provider {
+public:
+  typedef std::shared_ptr<video_provider> video_provider_ref;
+  static video_provider_ref create();
+  static video_provider_ref create(ci::fs::path);
+
+  video_provider() {};
+  
+  video_provider(ci::fs::path);
+
+  virtual ci::vec2 get_size() override;
+  
+  virtual bool is_ready() override;
+  
+  virtual void set_source(std::string path) override;
+  
+  virtual void update() override;
+  
+  ci::qtime::MovieGlRef get_movie() { return movie; }
+  
+protected:
+  ci::qtime::MovieGlRef movie;
+}; typedef video_provider::video_provider_ref video_provider_ref;
+
 
 /*
 /////////////////////////////////////////////////

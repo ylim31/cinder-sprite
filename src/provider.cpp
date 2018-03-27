@@ -7,6 +7,7 @@
 
 using namespace ci;
 using namespace ci::app;
+using namespace ci::qtime;
 
 /////////////////////////////////////////////////
 //
@@ -86,9 +87,11 @@ bool image_provider::is_ready() {
 /////////////////////////////////////////////////
 graphics_provider::graphics_provider(ci::vec2 size, bool transparent) {
   gl::Fbo::Format format;
-  format.setSamples(8);
+  format.setSamples(4);
+  format.setColorTextureFormat(
+    gl::Fbo::Format::getDefaultColorTextureFormat(transparent));
   fbo = ci::gl::Fbo::create(size.x, size.y, format);
-  
+  background = ColorA(0, 0, 0, 0);
 }
 
 vec2 graphics_provider::get_size() {
@@ -99,12 +102,17 @@ bool graphics_provider::is_ready() {
   return true;
 };
 
+void graphics_provider::set_background(ColorA c) {
+  background = c;
+  update();
+}
+
 void graphics_provider::update() {
   gl::ScopedFramebuffer scoped_fbo(fbo);
   gl::ScopedMatrices scoped_matrices;
   gl::ScopedViewport scoped_viewport(ivec2(0), fbo->getSize());
   gl::setMatricesWindow(fbo->getSize());
-  gl::clear(ColorA(0, 0, 0, 0));
+  gl::clear(background);
   draw();
   set_texture(fbo->getColorTexture());
 }
@@ -114,126 +122,44 @@ void graphics_provider::update() {
 //  VideoProvider
 //
 /////////////////////////////////////////////////
-/*
-std::vector<ciWMFVideoPlayerRef> VideoProvider::players;
 
-VideoProviderRef VideoProvider::create(std::string filename) {
-  return std::make_shared<VideoProvider>(filename);
+video_provider_ref video_provider::create() {
+  return std::make_shared<video_provider>();
 }
 
-int VideoProvider::playerListIndex = 0;
-
-VideoProvider::VideoProvider(std::string filename) {
-  ready = false;
-  playerIndex = VideoProvider::getPlayerIndex();
-  setSource(filename);
+video_provider_ref video_provider::create(fs::path p) {
+  return std::make_shared<video_provider>(p);
 }
 
-void VideoProvider::setSource(std::string path) {
-  source = path;
-  VideoProvider::players[playerIndex]->loadMovie(ci::app::getAssetPath(path));
+video_provider::video_provider(fs::path p) {
+  movie = MovieGl::create(p);
 }
 
-void VideoProvider::update() {
-  ciWMFVideoPlayerRef & player = VideoProvider::players[playerIndex];
-  player->update();
-  player->_player->m_pEVRPresenter->lockSharedTexture();
-  setTexture(player->getTexture());
-  
-  if (playing && player->isStopped() && !player->isLooping() && !player->isPaused()) {
-    playing = false;
-    mediaCompleteSignal.emit();
-  }
+vec2 video_provider::get_size() {
+  if(movie) return movie->getSize();
+  return vec2(512, 512);
+};
+
+bool video_provider::is_ready() {
+  if(!movie) return false;
+  return movie->isPlayable();
 }
 
-vec2 VideoProvider::getSize() { 
-  ciWMFVideoPlayerRef & player = VideoProvider::players[playerIndex];
-  return vec2(player->getWidth(), player->getHeight());
-}
-
-bool VideoProvider::isReady() {
-  PlayerState state = VideoProvider::players[playerIndex]->_player->GetState();
-  return
-  state == PlayerState::Started ||
-  state == PlayerState::Stopped ||
-  state == PlayerState::Paused;
-}
-
-void VideoProvider::startMedia(bool loop) {
-  VideoProvider::players[playerIndex]->setLoop(loop);
-  VideoProvider::players[playerIndex]->play();
-  mediaIsLooping = loop;
-  playing = true;
-}
-
-  /////////////////////////////////////////////////
-  //
-  //  WebProvider
-  //
-  /////////////////////////////////////////////////
-WebProviderRef WebProvider::create(std::string url, ci::vec2 size, WebView * webView) {
-  return std::make_shared<WebProvider>(url, size, webView);
-}
-
-WebProvider::WebProvider(std::string url, vec2 size, WebView * webView) : view(webView), viewSize(size) {
-  view->SetTransparent(true);
-  
-  JSValue result = view->CreateGlobalJavascriptObject(WSLit("storyscreens"));
-  
-  if (result.IsObject()) {
-    JSObject & jsObject = result.ToObject();
-    jsObject.SetProperty(ToWebString("data"), AwesomiumSingleton::getPersistentStorage());
-    
-    dispatcher.Bind(jsObject, WSLit("cue_complete"), JSDelegate(this, &WebProvider::onCueComplete));
-    
-    dispatcher.Bind(jsObject, WSLit("write_data"), JSDelegate(this, &WebProvider::onPersistentStorageWrite));
-    
-    dispatcher.Bind(jsObject, WSLit("log"), JSDelegate(this, &WebProvider::onWebViewLog));
+void video_provider::set_source(std::string path) {
+  if(movie) {
+    movie->stop();
   }
   
-  view->set_js_method_handler(&dispatcher);
-  setSource(url);
-}
+  movie = MovieGl::create(path);
+  movie->play();
+};
 
-WebProvider::~WebProvider() {
-  view->Destroy();
-}
-
-void WebProvider::setSource(std::string url) {
-  source = url;
-  view->LoadURL(WebURL(WSLit(url.c_str())));
-}
-
-vec2 WebProvider::getSize() {
-  return viewSize;
-}
-
-bool WebProvider::isReady() {
-  return !view->IsLoading();
-}
-
-void WebProvider::onCueComplete(WebView* callingView, const JSArray& args) {
-  mediaCompleteSignal.emit();
-}
-
-void WebProvider::onPersistentStorageWrite(WebView* callingView, const JSArray& args) {
-  if (args.size()) {
-    AwesomiumSingleton::updatePersistentStorage(args.At(0).ToString());
-  }
-}
-
-void WebProvider::onWebViewLog(Awesomium::WebView* callingView, const Awesomium::JSArray & args) {
-  if (args.size()) {
-    CI_LOG_I(args.At(0).ToString());
-  }
-}
-
-void WebProvider::update() {
-  if (view) {
-    BitmapSurface * surface = (BitmapSurface*)view->surface();
-    if (surface && surface->is_dirty()) {
-      setTexture(toTexture(surface));
+void video_provider::update() {
+  if(movie) {
+    if(movie->isPlaying()) {
+      if(movie->checkNewFrame()) {
+        set_texture(movie->getTexture());
+      }
     }
   }
 }
-*/

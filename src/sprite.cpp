@@ -32,8 +32,7 @@ sprite_ref sprite::create(provider_type type) {
 sprite::sprite(const texture_provider_ref texture_provider) {
   alpha() = 1.0f;
   origin = origin_point::TopLeft;
-  scale = 1.0f;
-  scale() = 1.0f;
+  scale() = vec2(1.0f);
   tint() = Color::white();
   zoom() = 0.0f;
   
@@ -43,8 +42,7 @@ sprite::sprite(const texture_provider_ref texture_provider) {
 sprite::sprite(provider_type type) {
   alpha() = 1.0f;
   origin = origin_point::TopLeft;
-  scale = 1.0f;
-  scale() = 1.0f;
+  scale() = vec2(1.0f);
   tint() = Color::white();
   zoom() = 0.0f;
   
@@ -88,7 +86,12 @@ void sprite::set_provider(texture_provider_ref provider_ref) {
 }
 
 void sprite::set_scale(float new_scale) {
-  scale() = std::max(0.0f, new_scale);
+  //scale() = std::max(0.0f, new_scale);
+  set_scale(vec2(new_scale, new_scale));
+}
+
+void sprite::set_scale(vec2 new_scale) {
+  scale() = vec2(std::max(0.0f, new_scale.x), std::max(0.0f, new_scale.y));
 }
 
 void sprite::set_source(std::string source) {
@@ -145,7 +148,7 @@ ci::TweenRef<ci::Rectf> sprite::apply_mask_animation(Rectf startMask, Rectf targ
   return ci::app::timeline().apply(&mask, startMask, targetMask, duration).delay(delay).easeFn(easeFn);
 }
 
-bool sprite::contains_point(ci::vec2 p) {
+bool sprite::contains_point(const ci::vec2 & p) {
   ci::Rectf b(bounds);
   b.offset(coordinates());
   if(origin == origin_point::Center) b.offset(-bounds.getSize() * 0.5f);
@@ -155,14 +158,14 @@ bool sprite::contains_point(ci::vec2 p) {
 
 void sprite::draw() {
   if (alpha() > 0.0 && output) {
-    gl::ScopedColor sc;
-    gl::ScopedBlendAlpha sa;
-    gl::ScopedModelMatrix m1;
+    gl::ScopedMatrices m1;
     gl::translate(coordinates());
-    gl::scale(scale(), scale());
+    gl::scale(scale());
     if(origin == origin_point::Center) {
       gl::translate(-texture_size * 0.5f);
     }
+    gl::ScopedColor sc;
+    gl::ScopedBlendAlpha sa;
     gl::color(ColorA(tint, alpha));
     gl::draw(output, Area(mask), mask);
   }
@@ -227,7 +230,7 @@ ci::TweenRef<vec2> sprite::move_to(vec2 target, float duration, float delay, Eas
 /**
  * Invokes animation on scale
  */
-ci::TweenRef<float> sprite::scale_to(float target, float duration, float delay, ci::EaseFn ease_fn) {
+ci::TweenRef<vec2> sprite::scale_to(ci::vec2 target, float duration, float delay, ci::EaseFn ease_fn) {
   if (duration <= 0) {
     scale() = target;
     return nullptr;
@@ -236,16 +239,12 @@ ci::TweenRef<float> sprite::scale_to(float target, float duration, float delay, 
   }
 }
 
-/**
- * Starts media playback from provider
- */
-void sprite::start_media(TimelineRef animator, bool loop, bool cue_complete) {
-  provider->start_media(loop);
-
-  if (cue_complete) {
-    provider->get_media_complete_signal().connect([&] {
-      sprite::complete.emit();
-    });
+ci::TweenRef<vec2> sprite::scale_to(float target, float duration, float delay, ci::EaseFn ease_fn) {
+  if (duration <= 0) {
+    scale() = vec2(target);
+    return nullptr;
+  } else {
+    return ci::app::timeline().apply(&scale, vec2(target), duration).delay(delay).easeFn(ease_fn);
   }
 }
 
@@ -264,7 +263,7 @@ ci::TweenRef<ci::Color> sprite::tint_to(Color target, float duration, float dela
 void sprite::update() {
   if (provider) {
     if (provider->has_new_texture()) {
-      // TODO: This seems a odd, look into more clear or correct way to handle texture size changes
+      // TODO: This seems odd, look into more clear or correct way to handle texture size changes
       // set the new texture
       input = provider->get_texture();
       // if the size of the texture changes we need to update all size related vars
@@ -291,7 +290,7 @@ void sprite::update_fbo() {
     if (!fbo) {
       fbo = gl::Fbo::create(texture_size.x, texture_size.y, true);
     }
-
+    
     gl::ScopedMatrices scoped_matrices;
     gl::ScopedFramebuffer scoped_fbo(fbo);
     gl::ScopedViewport scoped_viewport(ivec2(0), fbo->getSize());
