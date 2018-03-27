@@ -72,7 +72,7 @@ void sprite::set_origin(origin_point new_origin) {
 
 void sprite::set_provider(texture_provider_ref provider_ref) {
   provider = provider_ref;
-  update();
+  on_provider_texture_update();
   
   if(texture_update_handler.isConnected()) {
     texture_update_handler.disable();
@@ -80,9 +80,8 @@ void sprite::set_provider(texture_provider_ref provider_ref) {
   }
   
   // Add a handler for texture updates from provider
-  texture_update_handler = provider->texture_update.connect([=] {
-    update();
-  });
+  texture_update_handler = provider->texture_update.connect(
+    std::bind(&sprite::on_provider_texture_update, this));
 }
 
 void sprite::set_scale(float new_scale) {
@@ -258,33 +257,37 @@ ci::TweenRef<ci::Color> sprite::tint_to(Color target, float duration, float dela
 }
 
 /** 
- * Call once per frame
+ * Handles a texture change in the provider
  */
-void sprite::update() {
-  if (provider) {
-    if (provider->has_new_texture()) {
-      // TODO: This seems odd, look into more clear or correct way to handle texture size changes
-      // set the new texture
-      input = provider->get_texture();
-      // if the size of the texture changes we need to update all size related vars
-      if (texture_size != provider->get_size()) {
+void sprite::on_provider_texture_update() {
+  if (provider && provider->has_new_texture()) {
+    // get the updated texture
+    input = provider->get_texture();
+    
+    // if the size of the texture changes we need to update all size related vars
+    if (texture_size != provider->get_size()) {
 
-        // set the new texture size
-        texture_size = provider->get_size();
+      // set the new texture size
+      texture_size = provider->get_size();
 
-        // update the mask rects to conform to the new
-        bounds.set(0, 0, texture_size.x, texture_size.y);
-        mask = Rectf(bounds.x1, bounds.y1, bounds.x2, bounds.y2);
-
-        // need to update the zoom area if the texture size has changed
-        zoom_center = texture_size * 0.5f;
-        update_zoom();
-      }
-      update_fbo();
+      // update the bounds mask and zoom
+      bounds.set(0, 0, texture_size.x, texture_size.y);
+      mask = Rectf(bounds.x1, bounds.y1, bounds.x2, bounds.y2);
+      zoom_center = texture_size * 0.5f;
+      update_zoom();
+      
+      // since the size changed, we set the fbo to null, which will
+      fbo = gl::Fbo::create(texture_size.x, texture_size.y, true);
     }
+    
+    // ...and finally
+    update_fbo();
   }
 }
 
+/**
+ * Update the contents of this sprite
+ */
 void sprite::update_fbo() {
   if (input) {
     if (!fbo) {

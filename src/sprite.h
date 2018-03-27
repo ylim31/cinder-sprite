@@ -153,9 +153,6 @@ public:
     float delay = 0,
     ci::EaseFn fn = ci::easeInOutQuad);
 
-  // update the sprite (called every frame)
-  void update();
-
   // schedule an animation to zoom the sprite
   ci::TweenRef<float> zoom_to(
     float target,
@@ -194,6 +191,9 @@ protected:
   void update_zoom();  // update the zoom area
 
   void update_fbo();   // update the fbo
+  
+  // handle changes in provider's texture
+  void on_provider_texture_update();
 
   ci::TweenRef<ci::Rectf> apply_mask_animation(
     ci::Rectf mask_start,
