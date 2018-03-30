@@ -46,6 +46,7 @@ sprite::sprite(provider_type type) {
   tint() = Color::white();
   zoom() = 0.0f;
   
+  // TODO: Create default create methods for each provider type
   switch(type) {
     case provider_type::Image:
       set_provider(image_provider::create());
@@ -72,7 +73,6 @@ void sprite::set_origin(origin_point new_origin) {
 
 void sprite::set_provider(texture_provider_ref provider_ref) {
   provider = provider_ref;
-  on_provider_texture_update();
   
   if(texture_update_handler.isConnected()) {
     texture_update_handler.disable();
@@ -82,6 +82,10 @@ void sprite::set_provider(texture_provider_ref provider_ref) {
   // Add a handler for texture updates from provider
   texture_update_handler = provider->texture_update.connect(
     std::bind(&sprite::on_provider_texture_update, this));
+  
+  if(provider->is_ready()) {
+    on_provider_texture_update();
+  }
 }
 
 void sprite::set_scale(float new_scale) {
@@ -134,11 +138,12 @@ texture_provider_ref sprite::get_provider() {
 //////////////////////////////////////////////////////
 // methods
 //////////////////////////////////////////////////////
-ci::TweenRef<float> sprite::alpha_to(float target, float duration, float delay, EaseFn ease_fn) {
+ci::TweenRef<float> sprite::alpha_to(float target, float duration, float delay, EaseFn ease_fn, bool append) {
   if (duration <= 0) {
     alpha = 0;
     return nullptr;
   } else {
+    if(append) return ci::app::timeline().appendTo(&alpha, target, duration).delay(delay).easeFn(ease_fn);
     return ci::app::timeline().apply(&alpha, target, duration).delay(delay).easeFn(ease_fn);
   }
 }
@@ -156,7 +161,7 @@ bool sprite::contains_point(const ci::vec2 & p) {
 }
 
 void sprite::draw() {
-  if (alpha() > 0.0 && output) {
+  if(alpha() > 0.0 && output) {
     gl::ScopedMatrices m1;
     gl::translate(coordinates());
     gl::scale(scale());
@@ -217,11 +222,12 @@ ci::TweenRef<ci::Rectf> sprite::mask_reveal(mask_type type, float duration, floa
 /**
  * Invokes animation on coordicates
  */
-ci::TweenRef<vec2> sprite::move_to(vec2 target, float duration, float delay, EaseFn ease_fn) {
+ci::TweenRef<vec2> sprite::move_to(vec2 target, float duration, float delay, EaseFn ease_fn, bool append) {
   if (duration <= 0) {
     coordinates = target;
     return nullptr;
   } else {
+    if(append) return ci::app::timeline().appendTo(&coordinates, target, duration).delay(delay).easeFn(ease_fn);
     return ci::app::timeline().apply(&coordinates, target, duration).delay(delay).easeFn(ease_fn);
   }
 }
@@ -263,7 +269,7 @@ void sprite::on_provider_texture_update() {
   if (provider && provider->has_new_texture()) {
     // get the updated texture
     input = provider->get_texture();
-    
+
     // if the size of the texture changes we need to update all size related vars
     if (texture_size != provider->get_size()) {
 

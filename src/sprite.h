@@ -26,11 +26,6 @@ public:
     Center = 1
   };
   
-  enum provider_type {
-    Image,
-    Graphics
-  };
-  
   enum mask_type {
     None,
     ToCenter,
@@ -109,7 +104,8 @@ public:
     float target,
     float duration = 0,
     float delay = 0,
-    ci::EaseFn fn = ci::easeInOutQuad);
+    ci::EaseFn fn = ci::easeInOutQuad,
+    bool append = false);
 
   // schedule a mask animation to hide the sprite
   ci::TweenRef<ci::Rectf> mask_hide(
@@ -131,7 +127,8 @@ public:
     ci::vec2 target,
     float duration = 0,
     float delay = 0,
-    ci::EaseFn fn = ci::easeInOutQuad);
+    ci::EaseFn fn = ci::easeInOutQuad,
+    bool append = false);
 
   // schedule an animation to scale the sprite
   ci::TweenRef<ci::vec2> scale_to(
