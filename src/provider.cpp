@@ -21,10 +21,6 @@ void texture_provider::set_texture(const gl::TextureRef & newTexture) {
   texture_update.emit();
 }
 
-signals::Signal<void()> & texture_provider::get_media_complete_signal() {
-  return media_complete_signal;
-}
-
 std::string texture_provider::get_source() {
   return source;
 }
@@ -133,6 +129,7 @@ video_provider_ref video_provider::create(fs::path p) {
 
 video_provider::video_provider(fs::path p) {
   movie = MovieGl::create(p);
+  movie->play();
 }
 
 vec2 video_provider::get_size() {
@@ -158,7 +155,9 @@ void video_provider::update() {
   if(movie) {
     if(movie->isPlaying()) {
       if(movie->checkNewFrame()) {
-        set_texture(movie->getTexture());
+        if(movie->getTexture()) {
+          set_texture(movie->getTexture());
+        }
       }
     }
   }
