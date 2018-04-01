@@ -262,7 +262,7 @@ ci::TweenRef<ci::Color> sprite::tint_to(Color target, float duration, float dela
   }
 }
 
-/** 
+/**
  * Handles a texture change in the provider
  */
 void sprite::on_provider_texture_update() {
@@ -305,6 +305,7 @@ void sprite::update_fbo() {
     gl::ScopedViewport scoped_viewport(ivec2(0), fbo->getSize());
     gl::setMatricesWindow(fbo->getSize());
     gl::clear(ColorA(0, 0, 0, 0));
+    gl::ScopedBlendPremult pre;
     gl::draw(input, zoom_area, fbo->getBounds());
     output = fbo->getColorTexture();
   }
