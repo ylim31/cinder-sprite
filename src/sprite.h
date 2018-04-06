@@ -76,6 +76,8 @@ public:
   void set_coordinates(ci::vec2 new_coords);
 
   void set_origin(origin_point new_origin);
+  
+  void set_premult(bool p);
 
   void set_provider(texture_provider_ref provider_ref);
 
@@ -162,6 +164,7 @@ protected:
   // properties
   //////////////////////////////////////////////////////
   // texture
+  bool use_premult;            // boolean indicating whether to use premultiplied alpha
   ci::Rectf bounds;           // normalized bounds
   ci::gl::FboRef fbo;         // an fbo used in the zoom compositing
   origin_point origin;        // the origin by which to scale and translate this sprite

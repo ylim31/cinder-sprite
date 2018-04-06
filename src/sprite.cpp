@@ -34,8 +34,10 @@ sprite::sprite(const texture_provider_ref texture_provider) {
   origin = origin_point::TopLeft;
   scale() = vec2(1.0f);
   tint() = Color::white();
+  use_premult = true;
   zoom() = 0.0f;
   
+  // make sure to call this at the end
   set_provider(texture_provider);
 }
 
@@ -44,6 +46,7 @@ sprite::sprite(provider_type type) {
   origin = origin_point::TopLeft;
   scale() = vec2(1.0f);
   tint() = Color::white();
+  use_premult = true;
   zoom() = 0.0f;
   
   // TODO: Create default create methods for each provider type
@@ -71,6 +74,8 @@ void sprite::set_origin(origin_point new_origin) {
   origin = new_origin;
 }
 
+void sprite::set_premult(bool p) { use_premult = p; }
+
 void sprite::set_provider(texture_provider_ref provider_ref) {
   provider = provider_ref;
   
@@ -89,7 +94,6 @@ void sprite::set_provider(texture_provider_ref provider_ref) {
 }
 
 void sprite::set_scale(float new_scale) {
-  //scale() = std::max(0.0f, new_scale);
   set_scale(vec2(new_scale, new_scale));
 }
 
@@ -125,7 +129,7 @@ void sprite::set_zoom(float new_zoom) {
 //////////////////////////////////////////////////////
 ci::Rectf sprite::get_bounds() {
   ci::Rectf b = Rectf(bounds);
-  b.offset(coordinates);
+  b.offset(coordinates());
   if(origin == origin_point::Center) b.offset(-bounds.getSize() * 0.5f);
   b.scaleCentered(scale());
   return b;
@@ -305,9 +309,14 @@ void sprite::update_fbo() {
     gl::ScopedViewport scoped_viewport(ivec2(0), fbo->getSize());
     gl::setMatricesWindow(fbo->getSize());
     gl::clear(ColorA(0, 0, 0, 0));
-    gl::ScopedBlendPremult pre;
-    gl::draw(input, zoom_area, fbo->getBounds());
-    output = fbo->getColorTexture();
+    if(use_premult) {
+      gl::ScopedBlendPremult pre;
+      gl::draw(input, zoom_area, fbo->getBounds());
+      output = fbo->getColorTexture();
+    } else {
+      gl::draw(input, zoom_area, fbo->getBounds());
+      output = fbo->getColorTexture();
+    }
   }
 }
 
