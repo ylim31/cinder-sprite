@@ -42,10 +42,6 @@ public:
   static sprite_ref create(provider_type type = provider_type::Image);
 
   static sprite_ref create(const texture_provider_ref provider_ref);
-
-  static ci::signals::Signal<void()> complete;
-  
-  static ci::TimelineRef timeline;
   
   static void init();
 
@@ -55,6 +51,13 @@ public:
   sprite(const texture_provider_ref texture_provider);
 
   sprite(provider_type type = provider_type::Image);
+  
+  ~sprite() {
+    fbo.reset();
+    input.reset();
+    output.reset();
+    if(texture_update_handler.isConnected()) texture_update_handler.disconnect();
+  }
 
   //////////////////////////////////////////////////////
   // properties

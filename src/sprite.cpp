@@ -16,8 +16,6 @@ using namespace ci::app;
 ////////////////////////////////////////////////////
 //  static
 ////////////////////////////////////////////////////
-ci::signals::Signal<void()> sprite::complete;
-
 sprite_ref sprite::create(const texture_provider_ref provider){
   return std::make_shared<sprite>(provider);
 }
@@ -301,7 +299,10 @@ void sprite::on_provider_texture_update() {
 void sprite::update_fbo() {
   if (input) {
     if (!fbo) {
-      fbo = gl::Fbo::create(texture_size.x, texture_size.y, true);
+      gl::Fbo::Format format;
+      format.setSamples(4);
+      format.setColorTextureFormat(gl::Fbo::Format::getDefaultDepthTextureFormat());
+      fbo = gl::Fbo::create(texture_size.x, texture_size.y, format);
     }
     
     gl::ScopedMatrices scoped_matrices;
