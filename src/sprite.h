@@ -56,13 +56,9 @@ public:
     fbo.reset();
     input.reset();
     output.reset();
+    provider.reset();
     if(texture_update_handler.isConnected()) texture_update_handler.disconnect();
   }
-
-  //////////////////////////////////////////////////////
-  // properties
-  //////////////////////////////////////////////////////
-  texture_provider_ref provider;
 
   //////////////////////////////////////////////////////
   // getters
@@ -176,7 +172,7 @@ protected:
   ci::vec2 texture_size;      // width and height of the texture
   ci::Area zoom_area;         // an area used to zoom into the image
   ci::vec2 zoom_center;       // the point to zoom into
-
+  
   // animatables
   ci::Anim<float> alpha;          // alpha channel
   ci::Anim<ci::vec2> coordinates; // x, y coords
@@ -184,6 +180,9 @@ protected:
   ci::Anim<ci::vec2> scale;       // scale of this sprite
   ci::Anim<ci::Color> tint;       // the tint to be applied to this sprite
   ci::Anim<float> zoom;           // the level of zooming 0 = none, 1.0 completely zoomed in
+  
+  // provider
+  texture_provider_ref provider;
   
   // handlers
   ci::signals::Connection texture_update_handler;

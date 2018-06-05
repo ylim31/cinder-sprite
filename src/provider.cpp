@@ -104,13 +104,15 @@ void graphics_provider::set_background(ColorA c) {
 }
 
 void graphics_provider::update() {
-  gl::ScopedFramebuffer scoped_fbo(fbo);
-  gl::ScopedMatrices scoped_matrices;
-  gl::ScopedViewport scoped_viewport(ivec2(0), fbo->getSize());
-  gl::setMatricesWindow(fbo->getSize());
-  gl::clear(background);
-  draw();
-  set_texture(fbo->getColorTexture());
+  if(fbo) {
+    gl::ScopedFramebuffer scoped_fbo(fbo);
+    gl::ScopedMatrices scoped_matrices;
+    gl::ScopedViewport scoped_viewport(ivec2(0), fbo->getSize());
+    gl::setMatricesWindow(fbo->getSize());
+    gl::clear(background);
+    draw();
+    set_texture(fbo->getColorTexture());
+  }
 }
 
 /////////////////////////////////////////////////
