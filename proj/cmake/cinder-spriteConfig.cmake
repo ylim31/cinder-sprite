@@ -7,8 +7,9 @@ if(NOT TARGET cinder-sprite)
 
     # Make a list of source files and define that to be ${SOURCE_LIST}.
     file(GLOB SOURCE_LIST CONFIGURE_DEPENDS
-            "${cinder-sprite_PROJECT_ROOT}/src/rph/NotificationManager.cpp"
-            "${cinder-sprite_PROJECT_ROOT}/src/rph/Notification.cpp"
+            "${cinder-sprite_PROJECT_ROOT}/src/provider.cpp"
+            "${cinder-sprite_PROJECT_ROOT}/src/resizer.cpp"
+            "${cinder-sprite_PROJECT_ROOT}/src/sprite.cpp"
             )
 
     # Create the library!

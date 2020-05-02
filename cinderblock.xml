@@ -3,7 +3,6 @@
     <block
       author="@jeremyfromearth"
       id="com.jeremyfromearth.cinder-sprite"
-      git = ""
       license="GPL"
       name="Cinder-Sprite"
       summary="A display component supports animating position, opacity, scale and masking of images, video and OpenGL graphics"
